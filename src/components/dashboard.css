@@ -1,0 +1,376 @@
+/* Import Font (Jika diperlukan, misal: Poppins) */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+body {
+  font-family: "Poppins", sans-serif;
+  background-color: #f9f9f9;
+}
+
+/* Warna Utama */
+:root {
+  --primary-red: #cc0000;
+  --light-red: #fdeaea;
+  --dark-text: #333;
+  --light-text: #888;
+}
+
+.dashboard-wrapper {
+  display: flex;
+}
+
+/* ======================= */
+/* SIDEBAR (Kiri) */
+/* ======================= */
+.sidebar {
+  width: 280px;
+  background-color: var(--primary-red);
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  color: white;
+}
+
+.sidebar-header {
+  text-align: left; /* Sesuaikan dengan gambar terbaru */
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sidebar-header .logo {
+  max-width: 50px; /* Sesuaikan ukuran logo */
+}
+
+.sidebar-header .menu-text {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sidebar-nav .nav-link {
+  color: white;
+  text-decoration: none;
+  padding: 12px 18px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.sidebar-nav .nav-link i {
+  font-size: 1.25rem;
+}
+
+.sidebar-nav .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-nav .nav-link.active {
+  background-color: white;
+  color: var(--primary-red);
+  font-weight: 600;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.user-avatar-initial {
+  min-width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: white;
+  color: var(--primary-red);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-info .user-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.user-info .user-email {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+/* ======================= */
+/* MAIN CONTENT (Kanan) */
+/* ======================= */
+.main-content {
+  margin-left: 280px;
+  flex-grow: 1;
+  padding: 24px 36px;
+}
+
+.main-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.search-bar {
+  position: relative;
+  width: 60%; 
+}
+
+.search-bar .form-control {
+  border-radius: 12px;
+  padding-left: 40px;
+  border: 1px solid #ddd;
+  background-color: #fff;
+}
+
+.search-bar i {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--light-text);
+}
+
+.user-avatar-initial-header {
+  min-width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background-color: var(--light-red);
+  color: var(--primary-red);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+
+/* CSS Dropdown Logout */
+.user-menu {
+  position: relative;
+}
+
+.user-dropdown-menu {
+  position: absolute;
+  top: 120%;
+  right: 0;
+  width: 240px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border: 1px solid #eee;
+  padding: 0.5rem;
+  z-index: 100;
+}
+
+.user-dropdown-info {
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.user-dropdown-menu .user-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--dark-text);
+}
+.user-dropdown-menu .user-email {
+  font-size: 0.8rem;
+  color: var(--light-text);
+}
+.user-dropdown-menu hr {
+  margin: 0.5rem 0;
+}
+
+.user-dropdown-menu .dropdown-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.75rem 0.75rem;
+  border: none;
+  background: none;
+  color: var(--dark-text);
+  font-weight: 500;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+.user-dropdown-menu .dropdown-item i {
+  margin-right: 10px;
+  color: var(--primary-red);
+}
+
+.user-dropdown-menu .dropdown-item:hover {
+  background-color: #f9f9f9;
+  color: var(--primary-red);
+}
+
+/* Penyesuaian Font */
+.main-title {
+  font-size: 1.75rem; 
+  font-weight: 700;
+  color: var(--dark-text);
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  font-size: 1.15rem; 
+  font-weight: 600;
+  color: var(--dark-text);
+  margin-bottom: 1rem;
+}
+
+/* Filter Buttons */
+.filter-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.btn-filter {
+  border-radius: 20px;
+  padding: 8px 20px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  background-color: var(--light-red);
+  color: var(--primary-red);
+  border: 1px solid var(--light-red);
+  transition: all 0.2s ease;
+}
+
+.btn-filter:hover {
+  background-color: var(--primary-red);
+  color: white;
+}
+
+.btn-filter.active {
+  background-color: var(--primary-red);
+  color: white;
+}
+
+/* Card Styles */
+.card {
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  height: 100%;
+}
+
+.card-img-top {
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+/* Ongoing Card (Kiri atas) */
+.ongoing-card {
+  display: flex;
+  flex-direction: row;
+}
+.ongoing-card .card-img-top {
+  width: 40%;
+  aspect-ratio: 1 / 1;
+}
+.ongoing-card .card-body {
+  width: 60%;
+  padding: 1rem;
+}
+.ongoing-card .card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+.badge.category-badge {
+  background-color: var(--light-red);
+  color: var(--primary-red);
+  padding: 5px 10px;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+}
+
+/* Rekomendasi Card (Bawah) */
+.rekomendasi-card .card-body {
+  padding: 1rem;
+}
+.rekomendasi-card .card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.badge.category-badge-alt {
+  background-color: #eee;
+  color: var(--dark-text);
+  padding: 5px 10px;
+  font-weight: 500;
+}
+
+.card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: var(--dark-text); /* Diubah ke dark-text agar lebih jelas */
+  font-size: 0.85rem;
+  margin-top: 0.75rem;
+}
+.card-info span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rekomendasi-card .card-footer {
+  background-color: white;
+  border-top: none;
+  padding: 0 1rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-lihat {
+  background-color: var(--primary-red);
+  color: white;
+  font-weight: 500;
+  padding: 8px 24px;
+  border-radius: 8px;
+  text-decoration: none;
+}
+.btn-lihat:hover {
+  color: white;
+  opacity: 0.9;
+}
+
+.rekomendasi-card .card-footer .bi-bookmark {
+  font-size: 1.5rem;
+  color: var(--light-text);
+  cursor: pointer;
+}
+.rekomendasi-card .card-footer .bi-bookmark:hover {
+  color: var(--primary-red);
+}

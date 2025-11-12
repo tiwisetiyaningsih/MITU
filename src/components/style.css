@@ -1,0 +1,198 @@
+body {
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  background-color: #fff;
+
+}
+
+.login-page {
+  display: flex;
+  height: 100vh;
+
+  overflow: hidden;
+}
+
+/* BAGIAN KIRI */
+.login-left {
+  flex: 1;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.15) 75%, #540000 100%);
+  color: #800000;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100vh;
+}
+
+.mitu-logo {
+  width: 300px;
+  margin-bottom: 150px;
+}
+
+.login-left h2 {
+  font-weight: 500;
+  text-align: center;
+  color: #800000;
+}
+
+/* BAGIAN KANAN */
+.login-right {
+  flex: 1;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100vh;
+  margin-left: 50px;
+}
+
+.login-illustration {
+  width: 250px;
+  margin-bottom: 20px;
+}
+
+.login-right h2 {
+  margin-bottom: 10px;
+  color: #000;
+}
+
+.login-right form {
+  display: flex;
+  flex-direction: column;
+  width: 60%;
+}
+
+.login-right input {
+  padding: 12px;
+  margin: 8px 0;
+  border: none;
+  border-radius: 12px;
+  background-color: #ffe6e6;
+  outline: none;
+  font-size: 14px;
+}
+
+.login-right button {
+  margin-top: 10px;
+  padding: 12px;
+  border: none;
+  border-radius: 30px;
+  background-color: #b30000;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.login-right button:hover {
+  background-color: #800000;
+}
+
+.register-link {
+  margin-top: 15px;
+  color: #800000;
+}
+
+.register-link a {
+  color: #b30000;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.register-link a:hover {
+  text-decoration: underline;
+}
+
+.login-message {
+  color: #b30000;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+.login-message.success {
+  color: #28a745;
+}
+
+.login-message.error {
+  color: #dc3545;
+}
+
+.splash-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #fff; /* bisa diganti sesuai tema */
+}
+
+.splash-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.splash-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3; /* warna terang */
+  border-top: 5px solid #b30000; /* merah sesuai tema */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.splash-loading {
+  font-size: 24px;
+  font-weight: bold;
+  color: #b30000; /* merah */
+  text-align: center;
+  margin: 0;
+}
+
+
+/* Password field dengan ikon di dalam input */
+.password-field {
+  position: relative;
+  width: 100%;
+}
+
+.password-field input {
+  width: 100%;
+  padding-right: 38px; /* ruang tetap untuk ikon */
+  box-sizing: border-box;
+}
+
+/* Ikon mata di dalam input */
+.eye-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #800000;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.eye-toggle:hover {
+  opacity: 1;
+}
+
+/* Pastikan di layar kecil tetap rapi */
+@media (max-width: 480px) {
+  .eye-toggle {
+    right: 15px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+
