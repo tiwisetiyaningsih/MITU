@@ -1,0 +1,206 @@
+/* ======================= */
+/* PROFILE PAGE LAYOUT */
+/* ======================= */
+.profile-page-custom {
+    /* Batasi lebar konten di layar besar agar tidak terlalu melebar */
+    max-width: 100%; 
+}
+
+.section-subtitle-custom {
+    font-size: 1.1rem;
+    color: #333;
+    font-weight: 500;
+    margin-bottom: 20px;
+    margin-left: 0px; /* Tambahkan sedikit indentasi */
+}
+
+/* ======================= */
+/* INFO AKUN GRID STYLING */
+/* ======================= */
+
+.section-info-akun {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.info-grid-container {
+    display: grid;
+    /* Membuat 3 kolom dengan lebar yang sama */
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 25px 30px; /* Jarak antar baris dan kolom */
+}
+
+.info-item-profile {
+    display: flex;
+    flex-direction: column;
+    gap: 5px; 
+}
+
+/* Class untuk elemen yang mengambil 2 kolom (seperti Nama Lengkap) */
+.info-item-profile.col-span-2 {
+    grid-column: span 2; 
+}
+
+.info-label {
+    font-size: 0.85rem;
+    color: #999;
+    font-weight: 400;
+}
+
+.info-value {
+    font-size: 1rem;
+    color: #333;
+    font-weight: 600; 
+    /* Agar nilai tidak terlalu menjorok, pastikan font-size tetap 1rem atau sedikit lebih kecil */
+}
+
+/* ======================= */
+/* KEGIATAN TERSIMPAN TABLE */
+/* ======================= */
+
+.section-kegiatan-tersimpan {
+    margin-top: 50px;
+}
+
+/* Search Bar untuk Tabel */
+.search-table-container {
+    position: relative;
+    max-width: 300px; /* Batasi lebar search bar */
+    margin-bottom: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    padding: 8px 15px; /* Tambah padding agar terlihat lebih tinggi */
+    border: 1px solid #ddd;
+}
+
+.search-table-container i {
+    margin-right: 10px;
+    color: #999;
+}
+
+.form-control-table-search {
+    border: none;
+    outline: none;
+    width: 100%;
+    padding: 0; /* Hapus padding bawaan jika ada */
+    font-size: 0.95rem;
+}
+
+
+/* Tabel Styling */
+.table-responsive-custom {
+    overflow-x: auto;
+}
+
+.saved-activities-table {
+    background-color: #fff;
+    border-radius: 12px;
+    /* overflow: hidden; */ /* Hilangkan jika Anda menggunakan table-responsive-custom */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    border-collapse: separate; /* Untuk border-radius di tabel */
+    border-spacing: 0;
+}
+
+.saved-activities-table thead tr {
+    background-color: #f7f7f7;
+}
+
+.saved-activities-table th {
+    font-weight: 600;
+    color: #555;
+    font-size: 0.9rem;
+    vertical-align: middle;
+    padding: 15px;
+    border-bottom: 1px solid #ddd;
+}
+
+.saved-activities-table td {
+    vertical-align: middle;
+    font-size: 0.9rem; /* Ukuran font lebih kecil agar tidak terlalu besar */
+    color: #333;
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+}
+
+/* Badge Kategori */
+.category-badge-table {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 0.75rem;
+}
+.category-seminar {
+    background-color: #e0f7fa; 
+    color: #00bcd4;
+}
+.category-event {
+    background-color: #ffe0b2; 
+    color: #ff9800;
+}
+.category-pelatihan {
+    background-color: #fce4ec; 
+    color: #e91e63;
+}
+
+/* Badge Status */
+.status-badge-table {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 0.75rem;
+}
+.status-berlangsung {
+    background-color: #e8f5e9; 
+    color: #4CAF50;
+}
+.status-akandatang {
+    background-color: #fff3e0; 
+    color: #ff9800;
+}
+
+/* Aksi Icon */
+.action-icon {
+    color: #e91e63; 
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 5px;
+    transition: color 0.2s;
+}
+
+.action-icon:hover {
+    color: #d00000; /* Misalnya, berubah warna menjadi merah MITU saat di-hover */
+}
+
+/* ======================= */
+/* MEDIA QUERIES (RESPONSIVE) */
+/* ======================= */
+@media (max-width: 992px) {
+    .info-grid-container {
+        /* Mengubah layout menjadi 2 kolom di layar yang lebih kecil */
+        grid-template-columns: repeat(2, 1fr); 
+    }
+    /* Di layar yang lebih kecil, elemen col-span-2 mengambil 2 kolom */
+    .info-item-profile.col-span-2 {
+        grid-column: span 2; 
+    }
+}
+
+@media (max-width: 768px) {
+    .info-grid-container {
+        /* Mengubah layout menjadi 1 kolom di layar mobile */
+        grid-template-columns: 1fr; 
+        padding: 20px;
+    }
+    /* Di layar mobile, semua mengambil 1 kolom */
+    .info-item-profile.col-span-2 {
+        grid-column: span 1; 
+    }
+}
