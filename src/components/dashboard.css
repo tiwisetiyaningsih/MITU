@@ -122,7 +122,6 @@
 
 .nav-link-custom:hover {
   background-color: var(--mitu-dark-red);
-  color: white;
 }
 
 .nav-link-custom.active {

@@ -114,11 +114,7 @@ function Dashboard() {
   };
 
   // --- LOGIKA PEMISAHAN DATA ---
-  // Menggunakan data mock/API asli di sini
-  const ongoingKegiatan = mockOngoing; // Menggunakan mock di sini
-  // const ongoingKegiatan = kegiatan.filter(
-  //   (item) => item.TglMulaiKegiatan && item.TglMulaiKegiatan.split("T")[0] === new Date().toISOString().split("T")[0]
-  // );
+  const ongoingKegiatan = mockOngoing; 
 
   // 2. Data untuk "Rekomendasi Kegiatan" (Difilter)
   const filteredData = mockRekomendasi.filter(
@@ -135,9 +131,9 @@ function Dashboard() {
     }
   };
 
-  // ==============================================================================================
+
   // RENDER COMPONENT
-  // ==============================================================================================
+
   return (
     <div className="dashboard-container">
       {/* ======================= */}
