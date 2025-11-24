@@ -237,45 +237,97 @@ app.delete("/kegiatan/:id", (req, res) => {
 // ========== GET KEGIATAN TERSIMPAN BY USER ID ==========
 app.get("/kegiatan-tersimpan/:userId", (req, res) => {
   const { userId } = req.params;
+
   const sql = `
-    SELECT k.* FROM kegiatan k
-    INNER JOIN kegiatantersimpan ks ON k.KegiatanID = ks.KegiatanID
+    SELECT 
+      k.KegiatanID,
+      k.NamaKegiatan,
+      k.KategoriKegiatan AS Kategori,
+      k.TglMulaiKegiatan AS Tanggal,
+      k.TempatKegiatan AS Lokasi,
+      k.StatusKegiatan AS Status,
+      k.PesertaKegiatan AS Peserta,
+      ks.TanggalSimpan
+    FROM kegiatantersimpan ks
+    INNER JOIN kegiatan k ON ks.KegiatanID = k.KegiatanID
     WHERE ks.UserID = ?
+    ORDER BY ks.TanggalSimpan DESC
   `;
+
   db.query(sql, [userId], (err, results) => {
     if (err) {
       console.error("❌ Error ambil kegiatan tersimpan:", err);
       return res.status(500).json({ success: false, message: "Gagal mengambil kegiatan tersimpan" });
     }
+
     res.json(results);
   });
 });
 
 
+
+
 // ========== SIMPAN KEGIATAN ==========
 app.post("/simpan-kegiatan", (req, res) => {
   const { UserID, KegiatanID } = req.body;
-  const sql = "INSERT INTO kegiatantersimpan (UserID, KegiatanID) VALUES (?, ?)";
-  db.query(sql, [UserID, KegiatanID], (err, result) => {
-    if (err) {
-      console.error("❌ Error simpan kegiatan:", err);
-      return res.status(500).json({ success: false, message: "Gagal menyimpan kegiatan" });
+
+  const check = `
+    SELECT * FROM kegiatantersimpan 
+    WHERE UserID = ? AND KegiatanID = ?
+  `;
+
+  db.query(check, [UserID, KegiatanID], (err, results) => {
+    if (err) return res.status(500).json({ success: false, message: "Server error" });
+
+    if (results.length > 0) {
+      return res.status(400).json({ success: false, message: "Kegiatan sudah disimpan sebelumnya" });
     }
-    res.json({ success: true, message: "✅ Kegiatan berhasil disimpan!" });
+
+    const insert = `
+      INSERT INTO kegiatantersimpan (UserID, KegiatanID, TanggalSimpan)
+      VALUES (?, ?, NOW())
+    `;
+
+    db.query(insert, [UserID, KegiatanID], (err2) => {
+      if (err2) {
+        console.error("❌ Error simpan kegiatan:", err2);
+        return res.status(500).json({ success: false, message: "Gagal menyimpan kegiatan" });
+      }
+
+      res.json({ success: true, message: "✅ Kegiatan berhasil disimpan!" });
+    });
   });
 });
 
+
 // ========== HAPUS SIMPAN KEGIATAN ==========
-app.delete("/hapus-simpan-kegiatan", (req, res) => {
-  const { UserID, KegiatanID } = req.body;
-  const sql = "DELETE FROM kegiatantersimpan WHERE UserID = ? AND KegiatanID = ?";
-  db.query(sql, [UserID, KegiatanID], (err, result) => {
-    if (err) {
-      console.error("❌ Error hapus simpan kegiatan:", err);
-      return res.status(500).json({ success: false, message: "Gagal menghapus simpanan kegiatan" });
+app.delete("/kegiatan-tersimpan/:UserID/:KegiatanID", (req, res) => {
+    // 💡 AMBIL DATA DARI URL PARAMETER (req.params)
+    const { UserID, KegiatanID } = req.params;
+    
+    if (!UserID || !KegiatanID) {
+        return res.status(400).json({ success: false, message: "UserID dan KegiatanID harus disertakan." });
     }
-    res.json({ success: true, message: "✅ Simpanan kegiatan berhasil dihapus!" });
-  });
+
+    const sql = "DELETE FROM kegiatantersimpan WHERE UserID = ? AND KegiatanID = ?";
+    
+    db.query(sql, [UserID, KegiatanID], (err, result) => {
+        if (err) {
+            console.error("❌ Error hapus simpan kegiatan:", err);
+            return res.status(500).json({ success: false, message: "Gagal menghapus simpanan kegiatan dari database." });
+        }
+
+        if (result.affectedRows === 0) {
+            // Mengirim status 404 (Not Found) jika data tidak ada
+            return res.status(404).json({ success: false, message: "Kegiatan tersimpan tidak ditemukan." });
+        }
+        
+        // 💡 Kirim status 200 OK dengan JSON saat berhasil.
+        // Status 200 JSON ini paling aman untuk dicek oleh fetch API di frontend.
+        res.json({ success: true, message: "✅ Simpanan kegiatan berhasil dihapus!" });
+        
+        // Atau, jika ingin standar (tanpa body): res.status(204).send();
+    });
 });
 
 // ================= USERS (CRUD) =================

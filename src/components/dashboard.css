@@ -262,6 +262,7 @@
 .category-badge-ongoing.workshop { background-color: #ffc107; color: #333; }
 .category-badge-ongoing.event { background-color: #198754; }
 
+
 .ongoing-card-body {
     padding: 15px;
     flex-grow: 1;

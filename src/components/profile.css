@@ -140,6 +140,10 @@
     background-color: #e0f7fa; 
     color: #00bcd4;
 }
+.category-webinar {
+    background-color: #ebfedf; 
+    color: #6dd528;
+}
 .category-event {
     background-color: #ffe0b2; 
     color: #ff9800;
@@ -147,6 +151,14 @@
 .category-pelatihan {
     background-color: #fce4ec; 
     color: #e91e63;
+}
+.category-kompetisi {
+    background-color: #e4dafd; 
+    color: #581ee9;
+}
+.category-organisasi {
+    background-color: #fffce0; 
+    color: #e9d51e;
 }
 
 /* Badge Status */
@@ -164,6 +176,10 @@
 .status-akandatang {
     background-color: #fff3e0; 
     color: #ff9800;
+}
+.status-selesai {
+    background-color: #f9ebeb; 
+    color: #fa1616;
 }
 
 /* Aksi Icon */
