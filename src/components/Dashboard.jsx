@@ -22,8 +22,8 @@ function Dashboard() {
     } else {
       // fallback jika user belum login
       setUser({
-        Nama: "Guest User",
-        NIM: "000000",
+        Nama: "Memuat...",
+        NIM: "Memuat...",
       });
     }
   }, []);
@@ -63,8 +63,7 @@ function Dashboard() {
 
 
 
-  const rekomendasi = kegiatan.filter(
-    (item) =>
+  const rekomendasi = kegiatan.filter((item) =>
       item.StatusKegiatan !== "Berlangsung" &&
       (filter === "Semua" || item.KategoriKegiatan === filter) &&
       item.NamaKegiatan.toLowerCase().includes(search.toLowerCase())

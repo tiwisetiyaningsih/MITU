@@ -106,228 +106,181 @@ app.get("/kegiatan/search/:keyword", (req, res) => {
   });
 });
 
-
 // ========== POST KEGIATAN (TAMBAH) =========
 app.post("/kegiatan", (req, res) => {
-  const {
-    UserID,
-    NamaKegiatan,
-    DeskripsiKegiatan,
-    StatusKegiatan,
-    TglMulaiKegiatan,
-    TglAkhirKegiatan,
-    TempatKegiatan,
-    PenyelenggaraKegiatan,
-    KategoriKegiatan,
-    TingkatKegiatan,
-    ImageKegiatan,
-    LinkPendaftaran,
-  } = req.body;
-  const sql = `
-    INSERT INTO kegiatan (
-      UserID,
-      NamaKegiatan,
-      DeskripsiKegiatan,
-      StatusKegiatan,
-      TglMulaiKegiatan,
-      TglAkhirKegiatan,
-      TempatKegiatan,
-      PenyelenggaraKegiatan,
-      KategoriKegiatan,
-      TingkatKegiatan,
-      ImageKegiatan,
-      LinkPendaftaran
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `;
-  const values = [
-    UserID,
-    NamaKegiatan,
-    DeskripsiKegiatan,
-    StatusKegiatan,
-    TglMulaiKegiatan,
-    TglAkhirKegiatan,
-    TempatKegiatan,
-    PenyelenggaraKegiatan,
-    KategoriKegiatan,
-    TingkatKegiatan,
-    ImageKegiatan,
-    LinkPendaftaran,
-  ];
-  db.query(sql, values, (err, result) => {
-    if (err) {
-      console.error("❌ Error tambah kegiatan:", err);
-      return res.status(500).json({ success: false, message: "Gagal menambahkan kegiatan" });
-    }
-    res.json({ success: true, message: "✅ Kegiatan berhasil ditambahkan!", id: result.insertId });
-  });
+  const {
+    UserID,
+    NamaKegiatan,
+    DeskripsiKegiatan,
+    StatusKegiatan,
+    TglMulaiKegiatan, // Akan dikirim sebagai string YYYY-MM-DD
+    TglAkhirKegiatan, // Akan dikirim sebagai string YYYY-MM-DD
+    TempatKegiatan,
+    PenyelenggaraKegiatan,
+    KategoriKegiatan,
+    TingkatKegiatan,
+    ImageKegiatan,
+    LinkPendaftaran,
+  } = req.body;
+  
+  // Default UserID (sesuaikan dengan logika login Anda)
+  const user_id = UserID || 1; // Contoh default jika tidak ada UserID
+
+  const sql = `
+    INSERT INTO kegiatan (
+      UserID,
+      NamaKegiatan,
+      DeskripsiKegiatan,
+      StatusKegiatan,
+      TglMulaiKegiatan,
+      TglAkhirKegiatan,
+      TempatKegiatan,
+      PenyelenggaraKegiatan,
+      KategoriKegiatan,
+      TingkatKegiatan,
+      ImageKegiatan,
+      LinkPendaftaran
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+  const values = [
+    user_id,
+    NamaKegiatan,
+    DeskripsiKegiatan,
+    StatusKegiatan,
+    TglMulaiKegiatan,
+    TglAkhirKegiatan,
+    TempatKegiatan,
+    PenyelenggaraKegiatan,
+    KategoriKegiatan,
+    TingkatKegiatan,
+    ImageKegiatan,
+    LinkPendaftaran,
+  ];
+  db.query(sql, values, (err, result) => {
+    if (err) {
+      console.error("❌ Error tambah kegiatan:", err);
+      return res.status(500).json({ success: false, message: "Gagal menambahkan kegiatan" });
+    }
+    res.json({ success: true, message: "✅ Kegiatan berhasil ditambahkan!", id: result.insertId });
+  });
 });
 
 // ========== UPDATE KEGIATAN ==========
 app.put("/kegiatan/:id", (req, res) => {
-  const { id } = req.params;
-  const {
-    NamaKegiatan,
-    DeskripsiKegiatan,
-    StatusKegiatan,
-    TglMulaiKegiatan,
-    TglAkhirKegiatan,
-    TempatKegiatan,
-    PenyelenggaraKegiatan,
-    KategoriKegiatan,
-    TingkatKegiatan,
-    ImageKegiatan,
-    LinkPendaftaran,
-  } = req.body;
-  const sql = `
-    UPDATE kegiatan
-    SET
-      NamaKegiatan = ?,
-      DeskripsiKegiatan = ?,
-      StatusKegiatan = ?,
-      TglMulaiKegiatan = ?,
-      TglAkhirKegiatan = ?,
-      TempatKegiatan = ?,
-      PenyelenggaraKegiatan = ?,
-      KategoriKegiatan = ?,
-      TingkatKegiatan = ?,
-      ImageKegiatan = ?,
-      LinkPendaftaran = ?
-    WHERE KegiatanID = ?
-  `;
-  const values = [
-    NamaKegiatan,
-    DeskripsiKegiatan,
-    StatusKegiatan,
-    TglMulaiKegiatan,
-    TglAkhirKegiatan,
-    TempatKegiatan,
-    PenyelenggaraKegiatan,
-    KategoriKegiatan,
-    TingkatKegiatan,
-    ImageKegiatan,
-    LinkPendaftaran,
-    id,
-  ];
-  db.query(sql, values, (err, result) => {
-    if (err) {
-      console.error("❌ Error update kegiatan:", err);
-      return res.status(500).json({ success: false, message: "Gagal mengupdate kegiatan" });
-    }
-    res.json({ success: true, message: "✅ Kegiatan berhasil diupdate!" });
-  });
+  const { id } = req.params;
+  const {
+    NamaKegiatan,
+    DeskripsiKegiatan,
+    StatusKegiatan,
+    TglMulaiKegiatan,
+    TglAkhirKegiatan,
+    TempatKegiatan,
+    PenyelenggaraKegiatan,
+    KategoriKegiatan,
+    TingkatKegiatan,
+    ImageKegiatan,
+    LinkPendaftaran,
+  } = req.body;
+  const sql = `
+    UPDATE kegiatan
+    SET
+      NamaKegiatan = ?,
+      DeskripsiKegiatan = ?,
+      StatusKegiatan = ?,
+      TglMulaiKegiatan = ?,
+      TglAkhirKegiatan = ?,
+      TempatKegiatan = ?,
+      PenyelenggaraKegiatan = ?,
+      KategoriKegiatan = ?,
+      TingkatKegiatan = ?,
+      ImageKegiatan = ?,
+      LinkPendaftaran = ?
+    WHERE KegiatanID = ?
+  `;
+  const values = [
+    NamaKegiatan,
+    DeskripsiKegiatan,
+    StatusKegiatan,
+    TglMulaiKegiatan,
+    TglAkhirKegiatan,
+    TempatKegiatan,
+    PenyelenggaraKegiatan,
+    KategoriKegiatan,
+    TingkatKegiatan,
+    ImageKegiatan,
+    LinkPendaftaran,
+    id,
+  ];
+  db.query(sql, values, (err, result) => {
+    if (err) {
+      console.error("❌ Error update kegiatan:", err);
+      return res.status(500).json({ success: false, message: "Gagal mengupdate kegiatan" });
+    }
+    res.json({ success: true, message: "✅ Kegiatan berhasil diupdate!" });
+  });
 });
 
 // ========== DELETE KEGIATAN ==========
 app.delete("/kegiatan/:id", (req, res) => {
-  const { id } = req.params;
-  const sql = "DELETE FROM kegiatan WHERE KegiatanID = ?";
-  db.query(sql, [id], (err, result) => {
-    if (err) {
-      console.error("❌ Error hapus kegiatan:", err);
-      return res.status(500).json({ success: false, message: "Gagal menghapus kegiatan" });
-    }
-    res.json({ success: true, message: "✅ Kegiatan berhasil dihapus!" });
-  });
+  const { id } = req.params;
+  const sql = "DELETE FROM kegiatan WHERE KegiatanID = ?";
+  db.query(sql, [id], (err, result) => {
+    if (err) {
+      console.error("❌ Error hapus kegiatan:", err);
+      return res.status(500).json({ success: false, message: "Gagal menghapus kegiatan" });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: "Kegiatan tidak ditemukan" });
+    }
+    res.json({ success: true, message: "✅ Kegiatan berhasil dihapus!" });
+  });
 });
-
 
 // ================= KEGIATAN TERSIMPAN =================
 
 // ========== GET KEGIATAN TERSIMPAN BY USER ID ==========
 app.get("/kegiatan-tersimpan/:userId", (req, res) => {
   const { userId } = req.params;
-
   const sql = `
-    SELECT 
-      k.KegiatanID,
-      k.NamaKegiatan,
-      k.KategoriKegiatan AS Kategori,
-      k.TglMulaiKegiatan AS Tanggal,
-      k.TempatKegiatan AS Lokasi,
-      k.StatusKegiatan AS Status,
-      k.PesertaKegiatan AS Peserta,
-      ks.TanggalSimpan
-    FROM kegiatantersimpan ks
-    INNER JOIN kegiatan k ON ks.KegiatanID = k.KegiatanID
+    SELECT k.* FROM kegiatan k
+    INNER JOIN kegiatantersimpan ks ON k.KegiatanID = ks.KegiatanID
     WHERE ks.UserID = ?
-    ORDER BY ks.TanggalSimpan DESC
   `;
-
   db.query(sql, [userId], (err, results) => {
     if (err) {
       console.error("❌ Error ambil kegiatan tersimpan:", err);
       return res.status(500).json({ success: false, message: "Gagal mengambil kegiatan tersimpan" });
     }
-
     res.json(results);
   });
 });
 
 
-
-
 // ========== SIMPAN KEGIATAN ==========
 app.post("/simpan-kegiatan", (req, res) => {
   const { UserID, KegiatanID } = req.body;
-
-  const check = `
-    SELECT * FROM kegiatantersimpan 
-    WHERE UserID = ? AND KegiatanID = ?
-  `;
-
-  db.query(check, [UserID, KegiatanID], (err, results) => {
-    if (err) return res.status(500).json({ success: false, message: "Server error" });
-
-    if (results.length > 0) {
-      return res.status(400).json({ success: false, message: "Kegiatan sudah disimpan sebelumnya" });
+  const sql = "INSERT INTO kegiatantersimpan (UserID, KegiatanID) VALUES (?, ?)";
+  db.query(sql, [UserID, KegiatanID], (err, result) => {
+    if (err) {
+      console.error("❌ Error simpan kegiatan:", err);
+      return res.status(500).json({ success: false, message: "Gagal menyimpan kegiatan" });
     }
-
-    const insert = `
-      INSERT INTO kegiatantersimpan (UserID, KegiatanID, TanggalSimpan)
-      VALUES (?, ?, NOW())
-    `;
-
-    db.query(insert, [UserID, KegiatanID], (err2) => {
-      if (err2) {
-        console.error("❌ Error simpan kegiatan:", err2);
-        return res.status(500).json({ success: false, message: "Gagal menyimpan kegiatan" });
-      }
-
-      res.json({ success: true, message: "✅ Kegiatan berhasil disimpan!" });
-    });
+    res.json({ success: true, message: "✅ Kegiatan berhasil disimpan!" });
   });
 });
 
-
 // ========== HAPUS SIMPAN KEGIATAN ==========
-app.delete("/kegiatan-tersimpan/:UserID/:KegiatanID", (req, res) => {
-    // 💡 AMBIL DATA DARI URL PARAMETER (req.params)
-    const { UserID, KegiatanID } = req.params;
-    
-    if (!UserID || !KegiatanID) {
-        return res.status(400).json({ success: false, message: "UserID dan KegiatanID harus disertakan." });
+app.delete("/hapus-simpan-kegiatan", (req, res) => {
+  const { UserID, KegiatanID } = req.body;
+  const sql = "DELETE FROM kegiatantersimpan WHERE UserID = ? AND KegiatanID = ?";
+  db.query(sql, [UserID, KegiatanID], (err, result) => {
+    if (err) {
+      console.error("❌ Error hapus simpan kegiatan:", err);
+      return res.status(500).json({ success: false, message: "Gagal menghapus simpanan kegiatan" });
     }
-
-    const sql = "DELETE FROM kegiatantersimpan WHERE UserID = ? AND KegiatanID = ?";
-    
-    db.query(sql, [UserID, KegiatanID], (err, result) => {
-        if (err) {
-            console.error("❌ Error hapus simpan kegiatan:", err);
-            return res.status(500).json({ success: false, message: "Gagal menghapus simpanan kegiatan dari database." });
-        }
-
-        if (result.affectedRows === 0) {
-            // Mengirim status 404 (Not Found) jika data tidak ada
-            return res.status(404).json({ success: false, message: "Kegiatan tersimpan tidak ditemukan." });
-        }
-        
-        // 💡 Kirim status 200 OK dengan JSON saat berhasil.
-        // Status 200 JSON ini paling aman untuk dicek oleh fetch API di frontend.
-        res.json({ success: true, message: "✅ Simpanan kegiatan berhasil dihapus!" });
-        
-        // Atau, jika ingin standar (tanpa body): res.status(204).send();
-    });
+    res.json({ success: true, message: "✅ Simpanan kegiatan berhasil dihapus!" });
+  });
 });
 
 // ================= USERS (CRUD) =================

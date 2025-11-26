@@ -110,42 +110,43 @@ function MyProfile() {
 
 
   // ===================================
-    // FUNGSI: HAPUS KEGIATAN (API DELETE)
-    // ===================================
-    const handleDeleteActivity = async (kegiatanID, namaKegiatan) => {
-        if (!user || !user.UserID) {
-            alert("Detail pengguna tidak ditemukan. Silakan login ulang.");
-            return;
-        }
+  // FUNGSI: HAPUS KEGIATAN (API DELETE)
+  // ===================================
+  const handleDeleteActivity = async (kegiatanID, namaKegiatan) => {
+    if (!user || !user.UserID) {
+      alert("Detail pengguna tidak ditemukan. Tidak dapat menghapus kegiatan.");
+      return;
+    }
 
-        if (window.confirm(`Apakah Anda yakin ingin menghapus kegiatan "${namaKegiatan}" dari daftar simpanan?`)) {
-            try {
-                // 💡 PENTING: URL ini harus persis sama dengan route DELETE di server
-                const res = await fetch(`http://localhost:5000/kegiatan-tersimpan/${user.UserID}/${kegiatanID}`, {
-                    method: "DELETE",
-                    headers: { "Content-Type": "application/json" },
-                });
+    if (!kegiatanID) {
+        alert("ID Kegiatan tidak valid.");
+        return;
+    }
 
-                if (res.ok) {
-                    alert(`Kegiatan "${namaKegiatan}" berhasil dihapus dari daftar simpanan.`);
-                    fetchSavedActivities(user.UserID); // Muat ulang data
-                } else {
-                    let errorMessage = `Gagal menghapus kegiatan. Status: ${res.status}.`;
-                    try {
-                        const errorData = await res.json();
-                        errorMessage = errorData.message || errorData.error || errorMessage;
-                    } catch (jsonError) {
-                        // Jika respons bukan JSON (misalnya status 404/500 plain text)
-                        errorMessage += " Detail: Respon server bukan JSON.";
-                    }
-                    throw new Error(errorMessage);
-                }
-            } catch (err) {
-                console.error("Error delete kegiatan:", err);
-                alert(`Gagal menghapus kegiatan: ${err.message}`);
-            }
+    if (window.confirm(`Apakah Anda yakin ingin menghapus kegiatan "${namaKegiatan}" dari daftar simpanan?`)) {
+      try {
+        const res = await fetch(`http://localhost:5000/kegiatan-tersimpan/${user.UserID}/${kegiatanID}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (res.ok) {
+          alert(`Kegiatan "${namaKegiatan}" berhasil dihapus dari daftar simpanan.`);
+          // Muat ulang data
+          fetchSavedActivities(user.UserID);
+        } else {
+          const errorData = await res.json().catch(() => ({ message: 'Gagal menghapus (respon non-JSON).' }));
+          throw new Error(errorData.message || `Gagal menghapus kegiatan. Status: ${res.status}`);
         }
-    };
+      } catch (err) {
+        console.error("Error delete kegiatan:", err);
+        alert(`Gagal menghapus kegiatan: ${err.message}`);
+      }
+    }
+  };
+
 
   // Fungsi Logout
   const handleLogout = () => {

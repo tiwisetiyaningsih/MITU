@@ -1,11 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-// Import Gaya
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import "./dashboardAdmin.css"; 
-// Import Modal (Pastikan file ini ada di folder Anda)
+import "./kegiatan.css"; 
 import TambahKegiatanModal from './TambahKegiatanModal';
 import EditKegiatanModal from './EditKegiatanModal';
 
@@ -14,7 +13,56 @@ import EditKegiatanModal from './EditKegiatanModal';
 // ======================================
 const API_BASE_URL = 'http://localhost:5000'; 
 
-function DashboardAdmin() {
+// Warna untuk Pie Chart
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#d90000', '#00bcd4', '#ffc107'];
+const bulanNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+
+// ======================================
+// FUNGSI UTILITY BARU: MEMPROSES DATA UNTUK CHART
+// ======================================
+const processDataForCharts = (data) => {
+    // 1. Data Kegiatan per Bulan (Bar Chart)
+    const monthlyCount = {};
+    const currentYear = new Date().getFullYear();
+
+    data.forEach(item => {
+        const date = new Date(item.TglMulaiKegiatan);
+        const year = date.getFullYear();
+        // Hanya hitung kegiatan di tahun berjalan
+        if (year === currentYear) {
+            const monthIndex = date.getMonth(); 
+            const monthKey = bulanNames[monthIndex];
+            monthlyCount[monthKey] = (monthlyCount[monthKey] || 0) + 1;
+        }
+    });
+
+    // Buat array 12 bulan, pastikan urutan dan inisialisasi nol
+    const dataMonthly = bulanNames.map(month => ({
+        bulan: month,
+        jumlah: monthlyCount[month] || 0
+    }));
+
+    // 2. Data Distribusi Kategori (Pie Chart)
+    const categoryCount = {};
+    data.forEach(item => {
+        const kategori = item.KategoriKegiatan || 'Tidak Berkategori';
+        categoryCount[kategori] = (categoryCount[kategori] || 0) + 1;
+    });
+
+    const dataCategory = Object.keys(categoryCount).map(kategori => ({
+        name: kategori,
+        value: categoryCount[kategori]
+    }));
+
+    return { dataMonthly, dataCategory, currentYear };
+};
+
+
+// ======================================
+// KOMPONEN UTAMA
+// ======================================
+function Kegiatan() {
+    // State untuk data dan UI
     const [semuaKegiatan, setSemuaKegiatan] = useState([]);
     const [search, setSearch] = useState("");
     const [userAdmin, setUserAdmin] = useState(null); 
@@ -22,11 +70,14 @@ function DashboardAdmin() {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
+    // State untuk Modal
     const [showModal, setShowModal] = useState(false);
     const handleShow = () => setShowModal(true);
-    
     const [showModalEdit, setShowModalEdit] = useState(false);
     const [dataToEdit, setDataToEdit] = useState(null);
+
+    // Proses data untuk Chart menggunakan useMemo agar hanya dihitung ulang jika data kegiatan berubah
+    const { dataMonthly, dataCategory, currentYear } = useMemo(() => processDataForCharts(semuaKegiatan), [semuaKegiatan]);
 
     // ======================================
     // FUNGSI PENGAMBILAN DATA KEGIATAN (Fetch)
@@ -36,7 +87,8 @@ function DashboardAdmin() {
         setError(null);
         try {
             const response = await axios.get(`${API_BASE_URL}/kegiatan`);
-            setSemuaKegiatan(response.data); 
+            const sortedData = response.data.sort((a, b) => new Date(b.TglMulaiKegiatan) - new Date(a.TglMulaiKegiatan));
+            setSemuaKegiatan(sortedData); 
         } catch (err) {
             console.error("Error fetching kegiatan:", err);
             setError(`Gagal mengambil data kegiatan dari ${API_BASE_URL}/kegiatan. Pastikan backend berjalan.`);
@@ -46,6 +98,7 @@ function DashboardAdmin() {
         }
     };
 
+    // ... (FUNGSI HOOKS & UTILITY lainnya tetap sama) ...
     // ======================================
     // HOOKS: Mengambil Data Admin dan Kegiatan
     // ======================================
@@ -56,9 +109,10 @@ function DashboardAdmin() {
              const adminData = JSON.parse(storedUser);
              setUserAdmin(adminData);
         } else {
+             // Default Admin Info jika tidak ada user di localStorage
              setUserAdmin({
-                Nama: "Admin Tidak Dikenal",
-                Email: "Email Tidak Dikenal",
+                 Nama: "Memuat...",
+                 Email: "Memuat...",
              });
         }
         
@@ -90,16 +144,15 @@ function DashboardAdmin() {
             case "Webinar": return "kat-webinar";
             case "Pelatihan": return "kat-pelatihan";
             case "Kompetisi": return "kat-kompetisi";
-            case "Organisasi": return "kat-organisasi";
-            case "Event": return "kat-event";
+            case "Organisasi": return "kat-organisasi"; 
+            case "Event": return "kat-event"; 
+            case "UKM": return "kat-ukm"; 
+            case "Workshop": return "kat-workshop"; 
             default: return "kat-default";
         }
     };
-
-    const kegiatanBerlangsung = semuaKegiatan.filter(
-        (item) => item.StatusKegiatan === "Berlangsung"
-    );
     
+    // Filter kegiatan berdasarkan input search
     const filteredKegiatan = semuaKegiatan.filter((item) =>
         item.NamaKegiatan.toLowerCase().includes(search.toLowerCase())
     );
@@ -109,25 +162,41 @@ function DashboardAdmin() {
     // ======================================
     const handleCloseModal = () => {
         setShowModal(false);
-        fetchKegiatan();
+        fetchKegiatan(); // Refresh data setelah tambah
     }
     
     const handleSaveKegiatan = async (newKegiatanData) => {
-        console.log("Menyimpan Kegiatan Baru:", newKegiatanData);
-        alert("Kegiatan berhasil ditambahkan (Simulasi POST)");
-        handleCloseModal();
+        // Logika POST API di sini
+        try {
+            // Ganti dengan API nyata
+            // const response = await axios.post(`${API_BASE_URL}/kegiatan`, newKegiatanData);
+            // alert(response.data.message);
+            alert("Kegiatan berhasil ditambahkan (Simulasi POST)");
+            handleCloseModal();
+        } catch (error) {
+            console.error("Error saving kegiatan:", error);
+            alert("Gagal menyimpan kegiatan!");
+        }
     };
 
     const handleCloseModalEdit = () => {
         setShowModalEdit(false);
         setDataToEdit(null);
+        fetchKegiatan(); // Refresh data setelah edit
     };
 
     const handleUpdateKegiatan = async (id, updatedData) => {
-        console.log(`Mengupdate Kegiatan ID ${id} dengan data:`, updatedData);
-        alert(`Kegiatan ID ${id} berhasil diupdate (Simulasi PUT)`);
-        handleCloseModalEdit();
-        fetchKegiatan();
+        // Logika PUT API di sini
+        try {
+             // Ganti dengan API nyata
+             // const response = await axios.put(`${API_BASE_URL}/kegiatan/${id}`, updatedData);
+             // alert(response.data.message);
+            alert(`Kegiatan ID ${id} berhasil diupdate (Simulasi PUT)`);
+            handleCloseModalEdit();
+        } catch (error) {
+            console.error("Error updating kegiatan:", error);
+            alert("Gagal mengupdate kegiatan!");
+        }
     };
 
     const handleEdit = (id) => {
@@ -139,8 +208,9 @@ function DashboardAdmin() {
                 namaKegiatan: kegiatan.NamaKegiatan, 
                 deskripsi: kegiatan.DeskripsiKegiatan || '', 
                 status: kegiatan.StatusKegiatan, 
-                tanggalMulai: kegiatan.TglMulaiKegiatan, 
-                tanggalAkhir: kegiatan.TglAkhirKegiatan, 
+                // Pastikan format tanggal sesuai input modal (YYYY-MM-DD)
+                tanggalMulai: new Date(kegiatan.TglMulaiKegiatan).toISOString().split('T')[0],
+                tanggalAkhir: new Date(kegiatan.TglAkhirKegiatan).toISOString().split('T')[0],
                 tempat: kegiatan.TempatKegiatan, 
                 penyelenggara: kegiatan.PenyelenggaraKegiatan || '', 
                 kategori: kegiatan.KategoriKegiatan, 
@@ -159,36 +229,40 @@ function DashboardAdmin() {
     const handleDelete = async (id) => {
         const nama = semuaKegiatan.find(item => item.KegiatanID === id)?.NamaKegiatan;
         if (window.confirm(`Yakin ingin menghapus kegiatan "${nama}" (ID: ${id})?`)) {
-            alert(`Kegiatan ID ${id} berhasil dihapus (Simulasi DELETE)`);
-            setSemuaKegiatan(semuaKegiatan.filter(item => item.KegiatanID !== id));
+            try {
+                alert(`Kegiatan ID ${id} berhasil dihapus (Simulasi DELETE)`);
+                setSemuaKegiatan(semuaKegiatan.filter(item => item.KegiatanID !== id));
+            } catch (error) {
+                console.error("Error deleting kegiatan:", error);
+                alert("Gagal menghapus kegiatan!");
+            }
         }
     };
 
     const handleLogout = () => {
-        if (window.confirm("Apakah Anda yakin ingin keluar dari Dashboard Admin?")) {
+        if (window.confirm("Apakah Anda yakin ingin keluar dari Admin Panel?")) {
             localStorage.removeItem("user"); 
             navigate("/login");
         }
     };
-    
+
     // ======================================
     // RENDER COMPONENT
     // ======================================
     return (
         <div className="admin-layout">
+            {/* SIDEBAR */}
             <aside className="sidebar-admin">
                 <div className="sidebar-header-admin">
-                    <div className="logo-admin">
-                        <img src="/mitu_bw.svg" alt="MITU Logo" style={{ maxWidth: "107px" }} />
-                    </div>
+                    <img src="/mitu_bw.svg" alt="MITU Logo" style={{ maxWidth: "107px" }} />
                 </div>
                 
                 <nav className="sidebar-nav-admin">
-                    <a href="/dashboardAdmin" className="nav-item-admin active">
+                    <a href="/dashboardAdmin" className="nav-item-admin">
                         <i className="bi bi-house-door-fill"></i>
                         <span>Beranda</span>
                     </a>
-                    <a href="/admin/kegiatan" className="nav-item-admin">
+                    <a href="/admin/kegiatan" className="nav-item-admin active">
                         <i className="bi bi-calendar-check-fill"></i>
                         <span>Kegiatan</span>
                     </a>
@@ -226,49 +300,69 @@ function DashboardAdmin() {
                 </header>
 
                 <div className="content-container-admin">
-                    <h1 className="dashboard-title-admin">Dashboard Admin</h1>
-                    <p className="subtitle-admin">Kegiatan tengah berlangsung</p>
+                    <h1 className="dashboard-title-admin">Kegiatan</h1>
+                    <p className="subtitle-admin">Informasi dan statistik kegiatan</p>
 
-                    {/* Section: Kegiatan Tengah Berlangsung Cards */}
-                    <div className="kegiatan-berlangsung-list">
-                        {kegiatanBerlangsung.length > 0 ? (
-                            kegiatanBerlangsung.map((item) => (
-                                <div key={item.KegiatanID} className="kegiatan-card-admin">
-                                    <img
-                                        src={`/images/${item.ImageKegiatan || 'default.png'}`} 
-                                        alt={item.NamaKegiatan}
-                                        className="card-image-admin"
-                                    />
-                                    <div className="card-content-admin">
-                                        <h5 className="card-title-admin">{item.NamaKegiatan}</h5>
-                                        
-                                        <p className="card-subtitle-admin">
-                                            {item.DeskripsiKegiatan ? item.DeskripsiKegiatan.substring(0, 50) + '...' : 'Terbuka untuk umum'}
-                                        </p>
-                                        <div 
-                                            className={`badge-card-kategori ${getKategoriBadgeClass(item.KategoriKegiatan)}`}
-                                        >
-                                            {item.KategoriKegiatan}
-                                        </div>
+                    {/* STATISTIK KEGIATAN (CHART/GRAFIK) */}
+                    <div className="kegiatan-statistik-wrapper">
+                        
+                        {/* 1. Jumlah Kegiatan per Bulan (Bar Chart) */}
+                        <div className="statistik-card">
+                            <h2 className="statistik-title">Jumlah Kegiatan per Bulan ({currentYear})</h2>
+                            <div className="chart-container">
+                                {semuaKegiatan.length > 0 ? (
+                                    <ResponsiveContainer width="100%" height={300}>
+                                        <BarChart data={dataMonthly} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                                            <CartesianGrid strokeDasharray="3 3" />
+                                            <XAxis dataKey="bulan" />
+                                            <YAxis allowDecimals={false} />
+                                            <Tooltip formatter={(value) => [`${value} Kegiatan`, 'Jumlah']} />
+                                            <Legend />
+                                            <Bar dataKey="jumlah" fill="#d90000" name="Jumlah Kegiatan" />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                ) : (
+                                    <p className="text-muted text-center p-5">Tidak ada data kegiatan di tahun ini untuk ditampilkan.</p>
+                                )}
+                            </div>
+                        </div>
 
-                                        <div className="card-date-time-admin">
-                                            <i className="bi bi-calendar-event text-danger" style={{fontSize:'14px'}}></i>
-                                            <span>{formatDate(item.TglMulaiKegiatan)}</span>
-                                        </div>
-                                        <div className="card-date-time-admin">
-                                            <i className="bi bi-geo-alt-fill text-danger" style={{fontSize:'14px'}}></i>
-                                            <span>{item.TempatKegiatan}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))
-                        ) : (
-                            <p className="text-muted p-2">Tidak ada kegiatan yang sedang berlangsung saat ini.</p>
-                        )}
+                        {/* 2. Distribusi Kategori Kegiatan (Pie Chart) */}
+                        <div className="statistik-card">
+                            <h2 className="statistik-title">Distribusi Kategori Kegiatan</h2>
+                            <div className="chart-container">
+                                {semuaKegiatan.length > 0 ? (
+                                    <ResponsiveContainer width="100%" height={300}>
+                                        <PieChart>
+                                            <Pie
+                                                data={dataCategory}
+                                                dataKey="value"
+                                                nameKey="name"
+                                                cx="50%"
+                                                cy="50%"
+                                                outerRadius={100}
+                                                fill="#8884d8"
+                                                labelLine={false}
+                                                label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                                            >
+                                                {dataCategory.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                ))}
+                                            </Pie>
+                                            <Tooltip formatter={(value, name, props) => [`${value} Kegiatan`, props.payload.name]} />
+                                            {/* Legend di bawah chart */}
+                                            <Legend layout="horizontal" verticalAlign="bottom" align="center" wrapperStyle={{ paddingTop: '10px' }} />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                ) : (
+                                     <p className="text-muted text-center p-5">Tidak ada data kategori untuk ditampilkan.</p>
+                                )}
+                            </div>
+                        </div>
                     </div>
-                    {/* End Section: Kegiatan Tengah Berlangsung Cards */}
-
-                    {/* Section: Daftar Semua Kegiatan (Tabel) */}
+                    {/* END STATISTIK KEGIATAN */}
+                    
+                    {/* DAFTAR SEMUA KEGIATAN (Tabel) */}
                     <div className="daftar-kegiatan-section">
                         <div className="section-header-admin">
                             <h2 className="section-title-admin">Daftar Semua Kegiatan</h2>
@@ -281,7 +375,8 @@ function DashboardAdmin() {
                         {loading && <p className="text-center p-4">Sedang memuat data...</p>}
                         {error && <div className="alert alert-warning text-center">{error}</div>}
 
-                        {!loading && (
+                        {/* Tabel hanya ditampilkan jika tidak loading dan tidak error */}
+                        {!loading && !error && (
                             <div className="table-wrapper">
                                 <table className="kegiatan-table">
                                     <thead>
@@ -365,4 +460,4 @@ function DashboardAdmin() {
     );
 }
 
-export default DashboardAdmin;
+export default Kegiatan;

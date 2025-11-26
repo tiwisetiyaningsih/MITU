@@ -5,6 +5,8 @@ import Dashboard from './components/Dashboard'
 import DashboardAdmin from './components/DashboardAdmin'
 import SplashScreen from './components/SplashScreen'
 import MyProfile from './components/MyProfile'
+import Kegiatan from './components/Kegiatan'
+import UsersAdmin from './components/UsersAdmin'
 
 function App() {
   return (
@@ -16,6 +18,8 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/dashboardAdmin" element={<DashboardAdmin />} />
         <Route path='/myprofile' element={<MyProfile/>} />
+        <Route path='/admin/kegiatan' element={<Kegiatan/>} />
+        <Route path='/admin/users' element={<UsersAdmin/>} />
       </Routes>
     </Router>
   )
