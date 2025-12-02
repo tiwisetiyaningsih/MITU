@@ -12,6 +12,11 @@ function Dashboard() {
   const [filter, setFilter] = useState("Semua");
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
+  const [saved, setSaved] = useState({});
+  const [selectedKegiatan, setSelectedKegiatan] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+
+
 
   // ====== LOAD USER FROM LOCAL STORAGE ======
   useEffect(() => {
@@ -41,6 +46,30 @@ function Dashboard() {
 
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (!user || !user.UserID) return;
+
+    const fetchSaved = async () => {
+      try {
+        const res = await axios.get(`http://localhost:5000/kegiatan-tersimpan/${user.UserID}`);
+
+        // buat map dari KegiatanID → true
+        const savedMap = {};
+        res.data.forEach((item) => {
+          savedMap[item.KegiatanID] = true;
+        });
+
+        setSaved(savedMap);  
+      } catch (err) {
+        console.error("❌ Error ambil kegiatan tersimpan:", err);
+      }
+    };
+
+    fetchSaved();
+  }, [user]);
+
+
 
   // ====== FORMAT TANGGAL ======
   const formatDate = (dateString) => {
@@ -79,6 +108,47 @@ function Dashboard() {
       navigate("/login");
     }
   };
+
+  // ====== SIMPAN KEGIATAN ======
+  const simpanKegiatan = async (kegiatanID) => {
+    if (!user || !user.UserID) {
+      alert("Harap login terlebih dahulu");
+      return;
+    }
+
+    try {
+      const res = await axios.post("http://localhost:5000/simpan-kegiatan", {
+        UserID: user.UserID,
+        KegiatanID: kegiatanID,
+      });
+
+      if (res.data.success) {
+        setSaved((prev) => ({ ...prev, [kegiatanID]: true }));
+
+        alert(res.data.already ? "📌 Kegiatan sudah pernah disimpan" : "✅ Kegiatan berhasil disimpan!");
+      }
+    } catch (err) {
+      console.error("Error simpan:", err);
+      alert("Terjadi kesalahan saat menyimpan kegiatan");
+    }
+  };
+
+// ====== LIHAT DETAIL KEGIATAN ======
+const getDetailKegiatan = async (id) => {
+  try {
+    const res = await axios.get(`http://localhost:5000/detail-kegiatan/${id}`);
+
+    if (res.data.success) {
+      setSelectedKegiatan(res.data.data);
+      setShowModal(true);
+    }
+  } catch (err) {
+    console.error("❌ Error detail kegiatan:", err);
+    alert("Gagal mengambil detail kegiatan");
+  }
+};
+
+
 
   return (
     <div className="dashboard-container">
@@ -230,16 +300,19 @@ function Dashboard() {
                     </div>
 
                     <div className="card-footer-rekomendasi">
-                      <a
-                        href={item.LinkPendaftaran}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <button
                         className="btn btn-lihat-custom"
+                        onClick={() => getDetailKegiatan(item.KegiatanID)}
                       >
                         Lihat
-                      </a>
+                      </button>
 
-                      <i className="bi bi-bookmark bookmark-icon"></i>
+                      <i
+                        className={`bi bookmark-icon ${saved[item.KegiatanID] ? "bi-bookmark-fill" : "bi-bookmark"}`}
+                        onClick={() => simpanKegiatan(item.KegiatanID)}
+                        style={{ cursor: "pointer" }}
+                      ></i>
+
                     </div>
                   </div>
                 </div>
@@ -249,6 +322,73 @@ function Dashboard() {
             )}
           </div>
         </section>
+
+        {/* ================= MODAL DETAIL KEGIATAN ================= */}
+        {showModal && selectedKegiatan && (
+          <div className="modal-overlay">
+            <div className="modal-card">
+
+              <div className="modal-header">
+                <h3>{selectedKegiatan.NamaKegiatan}</h3>
+                <i
+                  className="bi bi-x-lg close-icon"
+                  onClick={() => setShowModal(false)}
+                ></i>
+              </div>
+
+              {/* Gambar Tetap */}
+              <div className="modal-image-wrapper">
+                <img
+                  src={`http://localhost:5000/uploads/${selectedKegiatan.ImageKegiatan}`}
+                  alt={selectedKegiatan.NamaKegiatan}
+                  className="modal-image"
+                />
+              </div>
+
+              {/* Bagian scroll */}
+              <div className="modal-scroll-content" style={{marginLeft:'15px', marginRight:'15px'}}>
+
+                <p><strong>Deskripsi:</strong><br />{selectedKegiatan.DeskripsiKegiatan}</p>
+
+                <p><strong>Status:</strong> {selectedKegiatan.StatusKegiatan}</p>
+
+                <p><strong>Tanggal Mulai:</strong><br />
+                  {formatDate(selectedKegiatan.TglMulaiKegiatan)}
+                </p>
+
+                <p><strong>Tanggal Selesai:</strong><br />
+                  {formatDate(selectedKegiatan.TglAkhirKegiatan)}
+                </p>
+
+                <p><strong>Tempat:</strong> {selectedKegiatan.TempatKegiatan}</p>
+
+                <p><strong>Penyelenggara:</strong> {selectedKegiatan.PenyelenggaraKegiatan}</p>
+
+                <p><strong>Kategori:</strong> {selectedKegiatan.KategoriKegiatan}</p>
+
+                <p><strong>Tingkat:</strong> {selectedKegiatan.TingkatKegiatan}</p>
+
+              </div>
+              <div className="text-center mt-3 mb-3">
+                  <a
+                    href={
+                      selectedKegiatan.LinkPendaftaran.startsWith("http")
+                        ? selectedKegiatan.LinkPendaftaran
+                        : "https://" + selectedKegiatan.LinkPendaftaran
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-lihat-custom"
+                    style={{ padding: "10px 30px" }}
+                  >
+                    Buka Link Pendaftaran
+                  </a>
+                </div>
+            </div>
+          </div>
+        )}
+
+
       </main>
     </div>
   );

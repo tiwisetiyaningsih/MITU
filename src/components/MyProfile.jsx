@@ -2,6 +2,8 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import axios from "axios";
+
 
 // Import CSS
 import "./dashboard.css"; 
@@ -14,6 +16,9 @@ function MyProfile() {
 
   const [activities, setActivities] = useState([]); 
   const [filteredActivities, setFilteredActivities] = useState([]); 
+
+  const [selectedKegiatan, setSelectedKegiatan] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
 
   // ===================================
@@ -119,33 +124,37 @@ function MyProfile() {
     }
 
     if (!kegiatanID) {
-        alert("ID Kegiatan tidak valid.");
-        return;
+      alert("ID Kegiatan tidak valid.");
+      return;
     }
 
     if (window.confirm(`Apakah Anda yakin ingin menghapus kegiatan "${namaKegiatan}" dari daftar simpanan?`)) {
       try {
-        const res = await fetch(`http://localhost:5000/kegiatan-tersimpan/${user.UserID}/${kegiatanID}`, {
+        const res = await fetch(`http://localhost:5000/hapus-simpan-kegiatan`, {
           method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            UserID: user.UserID,
+            KegiatanID: kegiatanID
+          })
         });
 
-        if (res.ok) {
+        const data = await res.json(); // HARUS diambil sebagai JSON karena server mengirim JSON
+
+        if (res.ok && data.success) {
           alert(`Kegiatan "${namaKegiatan}" berhasil dihapus dari daftar simpanan.`);
-          // Muat ulang data
           fetchSavedActivities(user.UserID);
         } else {
-          const errorData = await res.json().catch(() => ({ message: 'Gagal menghapus (respon non-JSON).' }));
-          throw new Error(errorData.message || `Gagal menghapus kegiatan. Status: ${res.status}`);
+          throw new Error(data.message || "Terjadi kesalahan.");
         }
+
       } catch (err) {
         console.error("Error delete kegiatan:", err);
         alert(`Gagal menghapus kegiatan: ${err.message}`);
       }
     }
   };
+
 
 
   // Fungsi Logout
@@ -156,6 +165,20 @@ function MyProfile() {
     }
   };
 
+  // ====== LIHAT DETAIL KEGIATAN ======
+  const getDetailKegiatan = async (id) => {
+    try {
+      const res = await axios.get(`http://localhost:5000/detail-kegiatan/${id}`);
+
+      if (res.data.success) {
+        setSelectedKegiatan(res.data.data);
+        setShowModal(true);
+      }
+    } catch (err) {
+      console.error("❌ Error detail kegiatan:", err);
+      alert("Gagal mengambil detail kegiatan");
+    }
+  };
 
   if (!user) {
       return (
@@ -271,7 +294,7 @@ function MyProfile() {
                   <th>Tanggal</th>
                   <th>Lokasi</th>
                   <th>Status</th>
-                  <th>Aksi</th>
+                  <th className="text-center">Aksi</th>
                 </tr>
               </thead>
               <tbody>
@@ -291,7 +314,14 @@ function MyProfile() {
                           {item.StatusKegiatan}
                         </span>
                       </td>
-                      <td>
+                      <td className="text-center">
+                        <i 
+                          className="bi bi-eye-fill action-icon text-primary me-2"
+                          title="Lihat Detail Kegiatan"
+                          onClick={() => getDetailKegiatan(item.KegiatanID)}
+                          style={{ cursor: 'pointer' }}
+                        ></i>
+
                         <i 
                             className="bi bi-bookmark-x-fill action-icon text-danger" 
                             title="Hapus Kegiatan Tersimpan"
@@ -311,7 +341,71 @@ function MyProfile() {
           </div>
 
         </section>
+        
+        {/* ================= MODAL DETAIL KEGIATAN ================= */}
+        {showModal && selectedKegiatan && (
+          <div className="modal-overlay">
+            <div className="modal-card">
 
+              <div className="modal-header">
+                <h3>{selectedKegiatan.NamaKegiatan}</h3>
+                <i
+                  className="bi bi-x-lg close-icon"
+                  onClick={() => setShowModal(false)}
+                ></i>
+              </div>
+
+              {/* Gambar Tetap */}
+              <div className="modal-image-wrapper">
+                <img
+                  src={`http://localhost:5000/uploads/${selectedKegiatan.ImageKegiatan}`}
+                  alt={selectedKegiatan.NamaKegiatan}
+                  className="modal-image"
+                />
+              </div>
+
+              {/* Bagian scroll */}
+              <div className="modal-scroll-content" style={{marginLeft:'15px', marginRight:'15px'}}>
+
+                <p><strong>Deskripsi:</strong><br />{selectedKegiatan.DeskripsiKegiatan}</p>
+
+                <p><strong>Status:</strong> {selectedKegiatan.StatusKegiatan}</p>
+
+                <p><strong>Tanggal Mulai:</strong><br />
+                  {formatDate(selectedKegiatan.TglMulaiKegiatan)}
+                </p>
+
+                <p><strong>Tanggal Selesai:</strong><br />
+                  {formatDate(selectedKegiatan.TglAkhirKegiatan)}
+                </p>
+
+                <p><strong>Tempat:</strong> {selectedKegiatan.TempatKegiatan}</p>
+
+                <p><strong>Penyelenggara:</strong> {selectedKegiatan.PenyelenggaraKegiatan}</p>
+
+                <p><strong>Kategori:</strong> {selectedKegiatan.KategoriKegiatan}</p>
+
+                <p><strong>Tingkat:</strong> {selectedKegiatan.TingkatKegiatan}</p>
+
+              </div>
+              <div className="text-center mt-3 mb-3">
+                  <a
+                    href={
+                      selectedKegiatan.LinkPendaftaran.startsWith("http")
+                        ? selectedKegiatan.LinkPendaftaran
+                        : "https://" + selectedKegiatan.LinkPendaftaran
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-lihat-custom"
+                    style={{ padding: "10px 30px" }}
+                  >
+                    Buka Link Pendaftaran
+                  </a>
+                </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

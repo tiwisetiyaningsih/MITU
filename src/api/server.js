@@ -237,6 +237,39 @@ app.delete("/kegiatan/:id", (req, res) => {
   });
 });
 
+// ================== GET DETAIL KEGIATAN ==================
+app.get("/detail-kegiatan/:KegiatanID", (req, res) => {
+  const { KegiatanID } = req.params;
+
+  const sql = `
+    SELECT * FROM kegiatan 
+    WHERE KegiatanID = ?
+  `;
+
+  db.query(sql, [KegiatanID], (err, result) => {
+    if (err) {
+      console.error("❌ Error ambil detail kegiatan:", err);
+      return res.status(500).json({ 
+        success: false, 
+        message: "Gagal mengambil detail kegiatan" 
+      });
+    }
+
+    if (result.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Kegiatan tidak ditemukan"
+      });
+    }
+
+    res.json({
+      success: true,
+      data: result[0]
+    });
+  });
+});
+
+
 // ================= KEGIATAN TERSIMPAN =================
 
 // ========== GET KEGIATAN TERSIMPAN BY USER ID ==========
@@ -260,15 +293,35 @@ app.get("/kegiatan-tersimpan/:userId", (req, res) => {
 // ========== SIMPAN KEGIATAN ==========
 app.post("/simpan-kegiatan", (req, res) => {
   const { UserID, KegiatanID } = req.body;
-  const sql = "INSERT INTO kegiatantersimpan (UserID, KegiatanID) VALUES (?, ?)";
-  db.query(sql, [UserID, KegiatanID], (err, result) => {
+
+  if (!UserID || !KegiatanID) {
+    return res.status(400).json({ success: false, message: "UserID atau KegiatanID tidak ditemukan" });
+  }
+
+  // Cek apakah sudah tersimpan
+  const checkSql = "SELECT * FROM kegiatantersimpan WHERE UserID = ? AND KegiatanID = ?";
+  db.query(checkSql, [UserID, KegiatanID], (err, rows) => {
     if (err) {
-      console.error("❌ Error simpan kegiatan:", err);
-      return res.status(500).json({ success: false, message: "Gagal menyimpan kegiatan" });
+      console.error("❌ Error check:", err);
+      return res.status(500).json({ success: false, message: "Gagal melakukan pengecekan" });
     }
-    res.json({ success: true, message: "✅ Kegiatan berhasil disimpan!" });
+
+    if (rows.length > 0) {
+      return res.json({ success: true, already: true, message: "📌 Kegiatan sudah pernah disimpan" });
+    }
+
+    // Insert jika belum ada
+    const sql = "INSERT INTO kegiatantersimpan (UserID, KegiatanID) VALUES (?, ?)";
+    db.query(sql, [UserID, KegiatanID], (err, result) => {
+      if (err) {
+        console.error("❌ Error simpan kegiatan:", err);
+        return res.status(500).json({ success: false, message: "Gagal menyimpan kegiatan" });
+      }
+      res.json({ success: true, message: "✅ Kegiatan berhasil disimpan!" });
+    });
   });
 });
+
 
 // ========== HAPUS SIMPAN KEGIATAN ==========
 app.delete("/hapus-simpan-kegiatan", (req, res) => {
