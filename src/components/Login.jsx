@@ -20,17 +20,28 @@ function Login() {
         password,
       });
 
-      if (res.data.success) {
-        localStorage.setItem("user", JSON.stringify(res.data.user));
-        alert("✅ Login berhasil! Selamat datang, " + res.data.user.Nama + "!");
-        if (res.data.user.Role === "Admin") {
-          navigate("/dashboardAdmin");
-        } else {
-          navigate("/dashboard");
-        }
-      } else {
+      // Jika login gagal normal (username / pass salah)
+      if (!res.data.success) {
         setMessage(res.data.message);
+        return;
       }
+
+      // 🔒 CEK STATUS AKUN
+      if (res.data.user.StatusAkun === "Nonaktif") {
+        setMessage("❌ Akun anda dinonaktifkan!");
+        return;
+      }
+
+      // Jika login berhasil dan akun aktif
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+      alert("✅ Login berhasil! Selamat datang, " + res.data.user.Nama + "!");
+
+      if (res.data.user.Role === "Admin") {
+        navigate("/dashboardAdmin");
+      } else {
+        navigate("/dashboard");
+      }
+
     } catch (error) {
       console.error(error);
       setMessage("⚠️ Gagal konek ke server!");

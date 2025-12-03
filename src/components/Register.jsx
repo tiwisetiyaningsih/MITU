@@ -158,7 +158,7 @@ function Register() {
           {message}
         </p>
         <p className="register-link">
-          Sudah punya akun? <Link to="/">Login</Link>
+          Sudah punya akun? <Link to="/login">Login</Link>
         </p>
       </div>
     </div>

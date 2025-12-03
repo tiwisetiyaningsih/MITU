@@ -1,13 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-// Import Gaya
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import { Modal, Button, Form, Row, Col } from "react-bootstrap";
 import "./dashboardAdmin.css"; 
-// Import Modal (Pastikan file ini ada di folder Anda)
-import TambahKegiatanModal from './TambahKegiatanModal';
-import EditKegiatanModal from './EditKegiatanModal';
 
 // ======================================
 // Konfigurasi API 
@@ -23,10 +20,10 @@ function DashboardAdmin() {
     const navigate = useNavigate();
 
     const [showModal, setShowModal] = useState(false);
-    const handleShow = () => setShowModal(true);
-    
+    const [formData, setFormData] = useState({});
     const [showModalEdit, setShowModalEdit] = useState(false);
     const [dataToEdit, setDataToEdit] = useState(null);
+    
 
     // ======================================
     // FUNGSI PENGAMBILAN DATA KEGIATAN (Fetch)
@@ -36,7 +33,8 @@ function DashboardAdmin() {
         setError(null);
         try {
             const response = await axios.get(`${API_BASE_URL}/kegiatan`);
-            setSemuaKegiatan(response.data); 
+            const sortedData = response.data.sort((a, b) => new Date(b.TglMulaiKegiatan) - new Date(a.TglMulaiKegiatan));
+            setSemuaKegiatan(sortedData);
         } catch (err) {
             console.error("Error fetching kegiatan:", err);
             setError(`Gagal mengambil data kegiatan dari ${API_BASE_URL}/kegiatan. Pastikan backend berjalan.`);
@@ -46,24 +44,16 @@ function DashboardAdmin() {
         }
     };
 
-    // ======================================
-    // HOOKS: Mengambil Data Admin dan Kegiatan
-    // ======================================
     useEffect(() => {
         const storedUser = localStorage.getItem("user"); 
-        
         if (storedUser) {
-             const adminData = JSON.parse(storedUser);
-             setUserAdmin(adminData);
+             setUserAdmin(JSON.parse(storedUser));
         } else {
-             setUserAdmin({
-                Nama: "Admin Tidak Dikenal",
-                Email: "Email Tidak Dikenal",
-             });
+             setUserAdmin({ Nama: "Memuat...", Email: "Memuat..." });
         }
-        
         fetchKegiatan();
     }, [navigate]);
+
 
     // ======================================
     // FUNGSI UTILITY (FORMAT & FILTER)
@@ -105,68 +95,132 @@ function DashboardAdmin() {
     );
 
     // ======================================
-    // FUNGSI MODAL & CRUD
+    // MODAL TAMBAH KEGIATAN
     // ======================================
     const handleCloseModal = () => {
         setShowModal(false);
-        fetchKegiatan();
-    }
-    
-    const handleSaveKegiatan = async (newKegiatanData) => {
-        console.log("Menyimpan Kegiatan Baru:", newKegiatanData);
-        alert("Kegiatan berhasil ditambahkan (Simulasi POST)");
-        handleCloseModal();
+        setFormData({});
     };
 
-    const handleCloseModalEdit = () => {
-        setShowModalEdit(false);
-        setDataToEdit(null);
-    };
+    // ======================================
+    // MODAL TAMBAH KEGIATAN — FIXED
+    // ======================================
+    const handleSaveKegiatan = async () => {
+        try {
+            const fd = new FormData();
 
-    const handleUpdateKegiatan = async (id, updatedData) => {
-        console.log(`Mengupdate Kegiatan ID ${id} dengan data:`, updatedData);
-        alert(`Kegiatan ID ${id} berhasil diupdate (Simulasi PUT)`);
-        handleCloseModalEdit();
-        fetchKegiatan();
-    };
+            fd.append("UserID", userAdmin.UserID);
+            fd.append("NamaKegiatan", formData.NamaKegiatan);
+            fd.append("KategoriKegiatan", formData.KategoriKegiatan);
+            fd.append("TglMulaiKegiatan", formData.TglMulaiKegiatan);
+            fd.append("TglAkhirKegiatan", formData.TglAkhirKegiatan);
+            fd.append("DeskripsiKegiatan", formData.DeskripsiKegiatan);
+            fd.append("StatusKegiatan", formData.StatusKegiatan);
+            fd.append("TingkatKegiatan", formData.TingkatKegiatan);
+            fd.append("TempatKegiatan", formData.TempatKegiatan);
+            fd.append("PenyelenggaraKegiatan", formData.PenyelenggaraKegiatan);
+            fd.append("LinkPendaftaran", formData.LinkPendaftaran);
 
-    const handleEdit = (id) => {
-        const kegiatan = semuaKegiatan.find(item => item.KegiatanID === id);
-        
-        if (kegiatan) {
-            handleShowEdit({
-                KegiatanID: kegiatan.KegiatanID,
-                namaKegiatan: kegiatan.NamaKegiatan, 
-                deskripsi: kegiatan.DeskripsiKegiatan || '', 
-                status: kegiatan.StatusKegiatan, 
-                tanggalMulai: kegiatan.TglMulaiKegiatan, 
-                tanggalAkhir: kegiatan.TglAkhirKegiatan, 
-                tempat: kegiatan.TempatKegiatan, 
-                penyelenggara: kegiatan.PenyelenggaraKegiatan || '', 
-                kategori: kegiatan.KategoriKegiatan, 
-                tingkat: kegiatan.TingkatKegiatan || '', 
-                ImageKegiatan: kegiatan.ImageKegiatan, 
-                linkPendaftaran: kegiatan.LinkPendaftaran || ''
+            if (formData.ImageKegiatan) {
+                fd.append("ImageKegiatan", formData.ImageKegiatan);
+            }
+
+            const res = await axios.post(`${API_BASE_URL}/kegiatan`, fd, {
+                headers: { "Content-Type": "multipart/form-data" }
             });
+
+            if (res.data.success) {
+                alert("Kegiatan berhasil ditambahkan!");
+                fetchKegiatan();
+                handleCloseModal();
+            } else {
+                alert("Gagal menambahkan kegiatan.");
+            }
+
+        } catch (err) {
+            console.error(err);
+            alert("Terjadi kesalahan saat menambahkan kegiatan.");
         }
     };
-    
-    const handleShowEdit = (kegiatanData) => {
-        setDataToEdit(kegiatanData);
+
+
+    // ======================================
+    // MODAL EDIT KEGIATAN — FIXED
+    // ======================================
+    const handleShowEdit = (kegiatan) => {
+        setDataToEdit({
+            ...kegiatan,
+            tanggalMulai: kegiatan.TglMulaiKegiatan?.substring(0, 10),
+            tanggalAkhir: kegiatan.TglAkhirKegiatan?.substring(0, 10),
+        });
         setShowModalEdit(true);
     };
-    
-    const handleDelete = async (id) => {
-        const nama = semuaKegiatan.find(item => item.KegiatanID === id)?.NamaKegiatan;
-        if (window.confirm(`Yakin ingin menghapus kegiatan "${nama}" (ID: ${id})?`)) {
-            alert(`Kegiatan ID ${id} berhasil dihapus (Simulasi DELETE)`);
-            setSemuaKegiatan(semuaKegiatan.filter(item => item.KegiatanID !== id));
+
+    const handleUpdateKegiatan = async () => {
+        try {
+            const fd = new FormData();
+            fd.append("NamaKegiatan", dataToEdit.NamaKegiatan);
+            fd.append("KategoriKegiatan", dataToEdit.KategoriKegiatan);
+            fd.append("TglMulaiKegiatan", dataToEdit.tanggalMulai);
+            fd.append("TglAkhirKegiatan", dataToEdit.tanggalAkhir);
+            fd.append("DeskripsiKegiatan", dataToEdit.DeskripsiKegiatan);
+            fd.append("StatusKegiatan", dataToEdit.StatusKegiatan);
+            fd.append("TingkatKegiatan", dataToEdit.TingkatKegiatan);
+            fd.append("TempatKegiatan", dataToEdit.TempatKegiatan);
+            fd.append("PenyelenggaraKegiatan", dataToEdit.PenyelenggaraKegiatan);
+            fd.append("LinkPendaftaran", dataToEdit.LinkPendaftaran);
+
+            if (dataToEdit.ImageKegiatan instanceof File) {
+                fd.append("ImageKegiatan", dataToEdit.ImageKegiatan);
+            }
+
+            const res = await axios.put(`${API_BASE_URL}/kegiatan/${dataToEdit.KegiatanID}`, fd, {
+                headers: { "Content-Type": "multipart/form-data" }
+            });
+
+            if (res.data.success) {
+                alert("Kegiatan berhasil diperbarui!");
+                fetchKegiatan();
+                setShowModalEdit(false);
+            }
+
+        } catch (err) {
+            console.log(err);
+            alert("Gagal mengupdate kegiatan.");
         }
     };
 
+
+    // ======================================
+    // DELETE KEGIATAN — FIXED
+    // ======================================
+    const handleDelete = async (id) => {
+        const nama = semuaKegiatan.find(item => item.KegiatanID === id)?.NamaKegiatan;
+
+        if (!window.confirm(`Yakin ingin menghapus kegiatan "${nama}"?`)) return;
+
+        try {
+            const res = await axios.delete(`${API_BASE_URL}/kegiatan/${id}`);
+
+            if (res.data.success) {
+                alert("Kegiatan berhasil dihapus!");
+                setSemuaKegiatan(prev => prev.filter(item => item.KegiatanID !== id));
+            }
+
+        } catch (err) {
+            console.error(err);
+            alert("Gagal menghapus kegiatan.");
+        }
+    };
+
+
+
+    // ======================================
+    // LOGOUT
+    // ======================================
     const handleLogout = () => {
-        if (window.confirm("Apakah Anda yakin ingin keluar dari Dashboard Admin?")) {
-            localStorage.removeItem("user"); 
+        if (window.confirm("Apakah Anda yakin ingin keluar?")) {
+            localStorage.removeItem("user");
             navigate("/login");
         }
     };
@@ -234,17 +288,22 @@ function DashboardAdmin() {
                         {kegiatanBerlangsung.length > 0 ? (
                             kegiatanBerlangsung.map((item) => (
                                 <div key={item.KegiatanID} className="kegiatan-card-admin">
-                                    <img
-                                        src={`/images/${item.ImageKegiatan || 'default.png'}`} 
-                                        alt={item.NamaKegiatan}
-                                        className="card-image-admin"
-                                    />
+                                    <div className="text-center" style={{alignItems:'center', justifyContent:'center'}}>
+                                        {item.ImageKegiatan ? (
+                                            <img
+                                                src={`http://localhost:5000/uploads/${item.ImageKegiatan}`}
+                                                alt={item.NamaKegiatan}
+                                                className="card-image-admin"
+                                            />
+                                        ) : (
+                                            <p className="text-center" style={{width:'100px', height:'100px', alignItems:'center', justifyContent:'center'}}>
+                                                No Image
+                                            </p>
+                                        )}
+                                    </div>
                                     <div className="card-content-admin">
                                         <h5 className="card-title-admin">{item.NamaKegiatan}</h5>
-                                        
-                                        <p className="card-subtitle-admin">
-                                            {item.DeskripsiKegiatan ? item.DeskripsiKegiatan.substring(0, 50) + '...' : 'Terbuka untuk umum'}
-                                        </p>
+                            
                                         <div 
                                             className={`badge-card-kategori ${getKategoriBadgeClass(item.KategoriKegiatan)}`}
                                         >
@@ -272,20 +331,19 @@ function DashboardAdmin() {
                     <div className="daftar-kegiatan-section">
                         <div className="section-header-admin">
                             <h2 className="section-title-admin">Daftar Semua Kegiatan</h2>
-                            <button className="btn-tambah-admin" onClick={handleShow}>
-                                <i className="bi bi-plus-circle-fill"></i>
-                                Tambah Kegiatan
-                            </button>
+                            <button className="btn-tambah-admin" onClick={() => setShowModal(true)}><i className="bi bi-plus-circle-fill"></i>Tambah Kegiatan</button>
                         </div>
 
                         {loading && <p className="text-center p-4">Sedang memuat data...</p>}
                         {error && <div className="alert alert-warning text-center">{error}</div>}
 
-                        {!loading && (
+                        {!loading && !error && (
                             <div className="table-wrapper">
                                 <table className="kegiatan-table">
                                     <thead>
                                         <tr>
+                                            <th>NO</th>
+                                            <th>GAMBAR</th>
                                             <th>NAMA KEGIATAN</th>
                                             <th>KATEGORI</th>
                                             <th>TANGGAL MULAI</th>
@@ -296,49 +354,37 @@ function DashboardAdmin() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {filteredKegiatan.length > 0 ? (
-                                            filteredKegiatan.map((item) => (
-                                                <tr key={item.KegiatanID}>
-                                                    <td>{item.NamaKegiatan}</td>
-                                                    <td>
-                                                        <span className={`badge-kategori-admin ${getKategoriBadgeClass(item.KategoriKegiatan)}`}>
-                                                            {item.KategoriKegiatan}
-                                                        </span>
-                                                    </td>
-                                                    <td>{formatDate(item.TglMulaiKegiatan)}</td>
-                                                    <td>{formatDate(item.TglAkhirKegiatan)}</td>
-                                                    <td>{item.TempatKegiatan}</td>
-                                                    <td>
-                                                        <span className={getStatusBadgeClass(item.StatusKegiatan)}>
-                                                            {item.StatusKegiatan}
-                                                        </span>
-                                                    </td>
-                                                    <td className="aksi">
-                                                        <div className="aksi-buttons">
-                                                            <button
-                                                                className="btn-aksi btn-edit"
-                                                                title="Edit"
-                                                                onClick={() => handleEdit(item.KegiatanID)}
-                                                            >
-                                                                <i className="bi bi-pencil-square"></i>
-                                                            </button>
-                                                            <button
-                                                                className="btn-aksi btn-delete"
-                                                                title="Hapus"
-                                                                onClick={() => handleDelete(item.KegiatanID)}
-                                                            >
-                                                                <i className="bi bi-trash-fill"></i>
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ))
-                                        ) : (
-                                            <tr>
-                                                <td colSpan="7" className="text-center p-3">
-                                                    Tidak ada kegiatan yang ditemukan.
+                                        {filteredKegiatan.length ? filteredKegiatan.map((item, index) => (
+                                            <tr key={item.KegiatanID}>
+                                                <td>{index + 1}</td>
+                                                <td style={{alignItems:'center', justifyContent:'center'}}>
+                                                    {item.ImageKegiatan ? (
+                                                        <img
+                                                            src={`http://localhost:5000/uploads/${item.ImageKegiatan}`}
+                                                            alt={item.NamaKegiatan}
+                                                            style={{width:'50px', height:'50px'}}
+                                                        />
+                                                    ) : (
+                                                        <p className="text-center">
+                                                            No Image
+                                                        </p>
+                                                    )}
+                                                </td>
+                                                <td>{item.NamaKegiatan}</td>
+                                                <td><span className={`badge-kategori-admin ${getKategoriBadgeClass(item.KategoriKegiatan)}`}>{item.KategoriKegiatan}</span></td>
+                                                <td>{formatDate(item.TglMulaiKegiatan)}</td>
+                                                <td>{formatDate(item.TglAkhirKegiatan)}</td>
+                                                <td>{item.TempatKegiatan}</td>
+                                                <td><span className={getStatusBadgeClass(item.StatusKegiatan)}>{item.StatusKegiatan}</span></td>
+                                                <td className="aksi">
+                                                    <div className="aksi-buttons">
+                                                        <button className="btn-aksi btn-edit" onClick={() => handleShowEdit(item)}><i className="bi bi-pencil-square"></i></button>
+                                                        <button className="btn-aksi btn-delete" onClick={() => handleDelete(item.KegiatanID)}><i className="bi bi-trash-fill"></i></button>
+                                                    </div>
                                                 </td>
                                             </tr>
+                                        )) : (
+                                            <tr><td colSpan="7" className="text-center p-3">Tidak ada kegiatan yang ditemukan.</td></tr>
                                         )}
                                     </tbody>
                                 </table>
@@ -347,20 +393,182 @@ function DashboardAdmin() {
                     </div>
                 </div>
             </main>
-            {/* RENDER MODAL */}
-            <TambahKegiatanModal
-                show={showModal}
-                handleClose={handleCloseModal}
-                handleSubmit={handleSaveKegiatan}
-            />
-            {dataToEdit && (
-                <EditKegiatanModal
-                    show={showModalEdit}
-                    handleClose={handleCloseModalEdit}
-                    handleUpdate={handleUpdateKegiatan}
-                    initialData={dataToEdit}
-                />
-            )}
+            {/* MODAL TAMBAH KEGIATAN */}
+            <Modal show={showModal} onHide={handleCloseModal} size="lg" centered>
+                <Form onSubmit={(e) => { e.preventDefault(); handleSaveKegiatan(); }}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Tambah Kegiatan</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <Row className="mb-3">
+                            <Form.Group as={Col}>
+                                <Form.Label>Nama Kegiatan</Form.Label>
+                                <Form.Control type="text" value={formData.NamaKegiatan || ""} onChange={e => setFormData({...formData, NamaKegiatan: e.target.value})} required/>
+                            </Form.Group>
+                            <Form.Group as={Col}>
+                                <Form.Label>Kategori</Form.Label>
+                                <Form.Select value={formData.KategoriKegiatan || ""} onChange={e => setFormData({...formData, KategoriKegiatan: e.target.value})}>
+                                    <option value="">Pilih Kategori</option>
+                                    <option value="Seminar">Seminar</option>
+                                    <option value="Webinar">Webinar</option>
+                                    <option value="Pelatihan">Pelatihan</option>
+                                    <option value="Kompetisi">Kompetisi</option>
+                                    <option value="Organisasi">Organisasi</option>
+                                    <option value="Event">Event</option>
+                                </Form.Select>
+                            </Form.Group>
+                        </Row>
+
+                        <Row className="mb-3">
+                            <Form.Group as={Col}>
+                                <Form.Label>Tanggal Mulai</Form.Label>
+                                <Form.Control type="date" value={formData.TglMulaiKegiatan || ""} onChange={e => setFormData({...formData, TglMulaiKegiatan: e.target.value})} required/>
+                            </Form.Group>
+                            <Form.Group as={Col}>
+                                <Form.Label>Tanggal Akhir</Form.Label>
+                                <Form.Control type="date" value={formData.TglAkhirKegiatan || ""} onChange={e => setFormData({...formData, TglAkhirKegiatan: e.target.value})} />
+                            </Form.Group>
+                        </Row>
+
+                        <Form.Group className="mb-3">
+                            <Form.Label>Deskripsi</Form.Label>
+                            <Form.Control as="textarea" rows={3} value={formData.DeskripsiKegiatan || ""} onChange={e => setFormData({...formData, DeskripsiKegiatan: e.target.value})}/>
+                        </Form.Group>
+
+                        <Row className="mb-3">
+                            <Form.Group as={Col}>
+                                <Form.Label>Status</Form.Label>
+                                <Form.Select value={formData.StatusKegiatan || ""} onChange={e => setFormData({...formData, StatusKegiatan: e.target.value})}>
+                                    <option value="">Pilih Status</option>
+                                    <option value="Akan Datang">Akan Datang</option>
+                                    <option value="Berlangsung">Berlangsung</option>
+                                    <option value="Selesai">Selesai</option>
+                                </Form.Select>
+                            </Form.Group>
+                            <Form.Group as={Col}>
+                                <Form.Label>Tingkat</Form.Label>
+                                <Form.Control type="text" value={formData.TingkatKegiatan || ""} onChange={e => setFormData({...formData, TingkatKegiatan: e.target.value})}/>
+                            </Form.Group>
+                        </Row>
+
+                        <Row className="mb-3">
+                            <Form.Group as={Col}>
+                                <Form.Label>Tempat</Form.Label>
+                                <Form.Control type="text" value={formData.TempatKegiatan || ""} onChange={e => setFormData({...formData, TempatKegiatan: e.target.value})}/>
+                            </Form.Group>
+                            <Form.Group as={Col}>
+                                <Form.Label>Penyelenggara</Form.Label>
+                                <Form.Control type="text" value={formData.PenyelenggaraKegiatan || ""} onChange={e => setFormData({...formData, PenyelenggaraKegiatan: e.target.value})}/>
+                            </Form.Group>
+                        </Row>
+
+                        <Form.Group className="mb-3">
+                            <Form.Label>Link Pendaftaran</Form.Label>
+                            <Form.Control type="url" value={formData.LinkPendaftaran || ""} onChange={e => setFormData({...formData, LinkPendaftaran: e.target.value})}/>
+                        </Form.Group>
+
+                        <Form.Group className="mb-3">
+                            <Form.Label>Gambar Kegiatan</Form.Label>
+                            <Form.Control type="file" onChange={e => setFormData({...formData, ImageKegiatan: e.target.files[0]})}/>
+                        </Form.Group>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={handleCloseModal}>Batal</Button>
+                        <Button variant="primary" type="submit">Simpan</Button>
+                    </Modal.Footer>
+                </Form>
+            </Modal>
+
+            {/* MODAL EDIT KEGIATAN */}
+            <Modal show={showModalEdit} onHide={() => setShowModalEdit(false)} size="lg" centered>
+                <Form onSubmit={(e) => { e.preventDefault(); handleUpdateKegiatan(); }}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Edit Kegiatan</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        {dataToEdit && (
+                            <>
+                                <Row className="mb-3">
+                                    <Form.Group as={Col}>
+                                        <Form.Label>Nama Kegiatan</Form.Label>
+                                        <Form.Control type="text" value={dataToEdit.NamaKegiatan || ""} onChange={e => setDataToEdit({...dataToEdit, NamaKegiatan: e.target.value})} required/>
+                                    </Form.Group>
+                                    <Form.Group as={Col}>
+                                        <Form.Label>Kategori</Form.Label>
+                                        <Form.Select value={dataToEdit.KategoriKegiatan || ""} onChange={e => setDataToEdit({...dataToEdit, KategoriKegiatan: e.target.value})}>
+                                            <option value="">Pilih Kategori</option>
+                                            <option value="Seminar">Seminar</option>
+                                            <option value="Webinar">Webinar</option>
+                                            <option value="Pelatihan">Pelatihan</option>
+                                            <option value="Kompetisi">Kompetisi</option>
+                                            <option value="Organisasi">Organisasi</option>
+                                            <option value="Event">Event</option>
+
+                                        </Form.Select>
+                                    </Form.Group>
+                                </Row>
+
+                                <Row className="mb-3">
+                                    <Form.Group as={Col}>
+                                        <Form.Label>Tanggal Mulai</Form.Label>
+                                        <Form.Control type="date" value={dataToEdit.tanggalMulai || ""} onChange={e => setDataToEdit({...dataToEdit, tanggalMulai: e.target.value})} required/>
+                                    </Form.Group>
+                                    <Form.Group as={Col}>
+                                        <Form.Label>Tanggal Akhir</Form.Label>
+                                        <Form.Control type="date" value={dataToEdit.tanggalAkhir || ""} onChange={e => setDataToEdit({...dataToEdit, tanggalAkhir: e.target.value})}/>
+                                    </Form.Group>
+                                </Row>
+
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Deskripsi</Form.Label>
+                                    <Form.Control as="textarea" rows={3} value={dataToEdit.DeskripsiKegiatan || ""} onChange={e => setDataToEdit({...dataToEdit, DeskripsiKegiatan: e.target.value})}/>
+                                </Form.Group>
+
+                                <Row className="mb-3">
+                                    <Form.Group as={Col}>
+                                        <Form.Label>Status</Form.Label>
+                                        <Form.Select value={dataToEdit.StatusKegiatan || ""} onChange={e => setDataToEdit({...dataToEdit, StatusKegiatan: e.target.value})}>
+                                            <option value="">Pilih Status</option>
+                                            <option value="Akan Datang">Akan Datang</option>
+                                            <option value="Berlangsung">Berlangsung</option>
+                                            <option value="Selesai">Selesai</option>
+                                        </Form.Select>
+                                    </Form.Group>
+                                    <Form.Group as={Col}>
+                                        <Form.Label>Tingkat</Form.Label>
+                                        <Form.Control type="text" value={dataToEdit.TingkatKegiatan || ""} onChange={e => setDataToEdit({...dataToEdit, TingkatKegiatan: e.target.value})}/>
+                                    </Form.Group>
+                                </Row>
+
+                                <Row className="mb-3">
+                                    <Form.Group as={Col}>
+                                        <Form.Label>Tempat</Form.Label>
+                                        <Form.Control type="text" value={dataToEdit.TempatKegiatan || ""} onChange={e => setDataToEdit({...dataToEdit, TempatKegiatan: e.target.value})}/>
+                                    </Form.Group>
+                                    <Form.Group as={Col}>
+                                        <Form.Label>Penyelenggara</Form.Label>
+                                        <Form.Control type="text" value={dataToEdit.PenyelenggaraKegiatan || ""} onChange={e => setDataToEdit({...dataToEdit, PenyelenggaraKegiatan: e.target.value})}/>
+                                    </Form.Group>
+                                </Row>
+
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Link Pendaftaran</Form.Label>
+                                    <Form.Control type="url" value={dataToEdit.LinkPendaftaran || ""} onChange={e => setDataToEdit({...dataToEdit, LinkPendaftaran: e.target.value})}/>
+                                </Form.Group>
+
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Gambar Kegiatan</Form.Label>
+                                    <Form.Control type="file" onChange={e => setDataToEdit({...dataToEdit, ImageKegiatan: e.target.files[0]})}/>
+                                </Form.Group>
+                            </>
+                        )}
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={() => setShowModalEdit(false)}>Batal</Button>
+                        <Button variant="primary" type="submit">Update</Button>
+                    </Modal.Footer>
+                </Form>
+            </Modal>
         </div>
     );
 }

@@ -21,7 +21,7 @@
 /* SIDEBAR (KIRI) */
 /* ----------------------------------- */
 .sidebar-custom {
-  width: 220px; /* Lebar sidebar */
+  width: 250px; 
   background-color: var(--mitu-red);
   color: white;
   padding: 20px 0;
@@ -159,17 +159,17 @@
 /* MAIN CONTENT (KANAN) */
 /* ----------------------------------- */
 .main-content-custom {
-  margin-left: 220px; /* Sesuaikan dengan lebar sidebar */
+  margin-left: 230px; /* Sesuaikan dengan lebar sidebar */
   flex-grow: 1;
-  min-width: 100%;
   background-color:#f8f9ff;
 }
 
 .main-header-custom {
     padding: 20px;
     border-bottom: none; /* Hilangkan border bawah jika ada */
-    background-color: #fff;
+    background-color: #ffffff;
     padding-left: 50px;
+    width: 175vh;
 }
 
 /* Search Bar */
@@ -180,7 +180,7 @@
     padding: 8px 15px;
     border-radius: 8px;
     border: 1px solid var(--border-color);
-    max-width: 500px; /* Batasi lebar */
+    max-width: 500px;
 }
 
 .search-bar-custom i {
@@ -199,9 +199,10 @@
     font-size: 32px;
     font-weight: bold;
     color: var(--text-dark);
-    margin-top: 30px;
+    margin-top: 20px;
     margin-bottom: 15px;
     padding-left: 50px;
+    width: 175vh;
 }
 
 .section-title-custom {
@@ -232,11 +233,14 @@
     background-color: white;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     flex-direction: row;
+    width: 395px;
+    height: 125px;
+    margin-bottom: 5px;
 }
 
 .ongoing-card-left {
     position: relative;
-    width: 120px; /* Proporsi gambar */
+    width: 120px; 
     flex-shrink: 0;
 }
 
@@ -245,6 +249,7 @@
     height: 100%;
     object-fit: cover;
     display: block;
+    padding: 5px;
 }
 
 .category-badge-ongoing {
@@ -256,7 +261,6 @@
     font-size: 12px;
     font-weight: bold;
     color: white;
-    /* Default/Contoh Warna */
     background-color: #0d6efd; 
 }
 .category-badge-ongoing.workshop { background-color: #ffc107; color: #333; }
@@ -277,6 +281,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    margin-bottom: 10px;
 }
 
 .ongoing-card-text {
@@ -290,6 +295,7 @@
     flex-direction: column;
     gap: 0px;
     font-size: 12px;
+    margin-top: 10px;
 }
 
 .info-item {
@@ -319,21 +325,21 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    min-height: 400px;
     width: 100%;
-    min-width: auto;
 }
 
 .card-header-rekomendasi {
     position: relative;
-    height: 180px; /* Ketinggian gambar */
+    height: 150px; 
 }
 
 .card-img-rekomendasi {
     width: 100%;
-    height: 100%;
+    height: 150px;
     object-fit: cover;
     display: block;
+    padding: 8px;
+    border-radius: 5px;
 }
 
 .label-rekomendasi {
@@ -360,7 +366,7 @@
     font-size: 16px;
     font-weight: bold;
     color: var(--text-dark);
-    margin-bottom: 15px;
+    margin-bottom: 8px;
 }
 
 .info-rekomendasi {
@@ -368,7 +374,7 @@
     align-items: center;
     font-size: 14px;
     color: var(--text-muted);
-    margin-bottom: 8px;
+    margin-bottom: 5px;
 }
 .info-rekomendasi i {
     margin-right: 10px;
@@ -376,7 +382,8 @@
 }
 
 .category-info {
-    margin-top: 10px;
+    margin-top: 5px;
+    margin-bottom: 0px;
 }
 
 .category-badge-rekomendasi {
@@ -524,7 +531,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 10px 15px;
+  margin: 10px 50px;
 }
 
 .close-icon {
@@ -557,4 +564,16 @@
 @keyframes fadeIn {
   from { opacity: 0; transform: scale(0.97); }
   to { opacity: 1; transform: scale(1); }
+}
+
+.no-image-box {
+  width: 100%;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f1f1;
+  border-radius: 8px;
+  color: #555;
+  font-weight: 600;
 }

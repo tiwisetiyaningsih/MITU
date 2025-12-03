@@ -2,12 +2,35 @@ import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import db from "./db.js";
+import multer from "multer";
+import fs from "fs";
+import path, { dirname } from "path";
+import { fileURLToPath } from "url";
+import mysql from "mysql2";
 
-
+// Untuk __dirname di ES Module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: true }));
+app.use("/uploads", express.static("uploads"));
+
+// ================== MULTER SETUP ==================
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, "uploads/"); 
+    },
+    filename: (req, file, cb) => {
+        const uniqueName =
+            Date.now() + "-" + Math.round(Math.random() * 1e9) + path.extname(file.originalname);
+        cb(null, uniqueName);
+    },
+});
+
+const upload = multer({ storage: storage });
 
 // ========== REGISTER ==========
 app.post("/register", (req, res) => {
@@ -64,19 +87,31 @@ app.post("/login", (req, res) => {
     }
 
     if (results.length > 0) {
-      res.json({
+      const user = results[0];
+
+      // 🔥 Cek apakah akun Nonaktif
+      if (user.StatusAkun === "Nonaktif") {
+        return res.json({
+          success: false,
+          message: "❌ Maaf, akun Anda Nonaktif!",
+        });
+      }
+
+      // Jika akun aktif → lanjut login
+      return res.json({
         success: true,
         message: "✅ Login berhasil!",
-        user: results[0],
+        user: user,
       });
     } else {
-      res.json({
+      return res.json({
         success: false,
         message: "❌ Username atau password salah!",
       });
     }
   });
 });
+
 
 
 // ================= KEGIATAN (CRUD) =================
@@ -106,136 +141,142 @@ app.get("/kegiatan/search/:keyword", (req, res) => {
   });
 });
 
-// ========== POST KEGIATAN (TAMBAH) =========
-app.post("/kegiatan", (req, res) => {
-  const {
-    UserID,
-    NamaKegiatan,
-    DeskripsiKegiatan,
-    StatusKegiatan,
-    TglMulaiKegiatan, // Akan dikirim sebagai string YYYY-MM-DD
-    TglAkhirKegiatan, // Akan dikirim sebagai string YYYY-MM-DD
-    TempatKegiatan,
-    PenyelenggaraKegiatan,
-    KategoriKegiatan,
-    TingkatKegiatan,
-    ImageKegiatan,
-    LinkPendaftaran,
-  } = req.body;
-  
-  // Default UserID (sesuaikan dengan logika login Anda)
-  const user_id = UserID || 1; // Contoh default jika tidak ada UserID
+// ========== POST KEGIATAN (TAMBAH) ==========
+app.post("/kegiatan", upload.single("ImageKegiatan"), (req, res) => {
+    console.log("📨 Data diterima:", req.body);
 
-  const sql = `
-    INSERT INTO kegiatan (
-      UserID,
-      NamaKegiatan,
-      DeskripsiKegiatan,
-      StatusKegiatan,
-      TglMulaiKegiatan,
-      TglAkhirKegiatan,
-      TempatKegiatan,
-      PenyelenggaraKegiatan,
-      KategoriKegiatan,
-      TingkatKegiatan,
-      ImageKegiatan,
-      LinkPendaftaran
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `;
-  const values = [
-    user_id,
-    NamaKegiatan,
-    DeskripsiKegiatan,
-    StatusKegiatan,
-    TglMulaiKegiatan,
-    TglAkhirKegiatan,
-    TempatKegiatan,
-    PenyelenggaraKegiatan,
-    KategoriKegiatan,
-    TingkatKegiatan,
-    ImageKegiatan,
-    LinkPendaftaran,
-  ];
-  db.query(sql, values, (err, result) => {
-    if (err) {
-      console.error("❌ Error tambah kegiatan:", err);
-      return res.status(500).json({ success: false, message: "Gagal menambahkan kegiatan" });
-    }
-    res.json({ success: true, message: "✅ Kegiatan berhasil ditambahkan!", id: result.insertId });
-  });
+    const {
+        UserID,
+        NamaKegiatan,
+        DeskripsiKegiatan,
+        StatusKegiatan,
+        TglMulaiKegiatan,
+        TglAkhirKegiatan,
+        TempatKegiatan,
+        PenyelenggaraKegiatan,
+        KategoriKegiatan,
+        TingkatKegiatan,
+        LinkPendaftaran
+    } = req.body;
+
+    if (!NamaKegiatan || !TglMulaiKegiatan || !StatusKegiatan) {
+        return res.status(400).json({ success: false, message: "Nama, Tanggal Mulai, dan Status wajib diisi!" });
+    }
+
+    const user_id = UserID || 1;
+
+    const ImageKegiatan = req.file ? req.file.filename : null;
+
+    const sql = `
+        INSERT INTO kegiatan (
+            UserID, NamaKegiatan, DeskripsiKegiatan, StatusKegiatan,
+            TglMulaiKegiatan, TglAkhirKegiatan, TempatKegiatan, 
+            PenyelenggaraKegiatan, KategoriKegiatan, TingkatKegiatan,
+            ImageKegiatan, LinkPendaftaran
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    const values = [
+        user_id, NamaKegiatan, DeskripsiKegiatan, StatusKegiatan,
+        TglMulaiKegiatan, TglAkhirKegiatan || null, TempatKegiatan,
+        PenyelenggaraKegiatan, KategoriKegiatan, TingkatKegiatan,
+        ImageKegiatan, LinkPendaftaran
+    ];
+
+    db.query(sql, values, (err, result) => {
+        if (err) {
+            console.error("❌ SQL Error:", err);
+            return res.status(500).json({
+                success: false,
+                message: "Gagal menambahkan kegiatan",
+                error: err
+            });
+        }
+        res.json({
+            success: true,
+            message: "✅ Kegiatan berhasil ditambahkan",
+            KegiatanID: result.insertId
+        });
+    });
 });
+
+
 
 // ========== UPDATE KEGIATAN ==========
-app.put("/kegiatan/:id", (req, res) => {
-  const { id } = req.params;
-  const {
-    NamaKegiatan,
-    DeskripsiKegiatan,
-    StatusKegiatan,
-    TglMulaiKegiatan,
-    TglAkhirKegiatan,
-    TempatKegiatan,
-    PenyelenggaraKegiatan,
-    KategoriKegiatan,
-    TingkatKegiatan,
-    ImageKegiatan,
-    LinkPendaftaran,
-  } = req.body;
-  const sql = `
-    UPDATE kegiatan
-    SET
-      NamaKegiatan = ?,
-      DeskripsiKegiatan = ?,
-      StatusKegiatan = ?,
-      TglMulaiKegiatan = ?,
-      TglAkhirKegiatan = ?,
-      TempatKegiatan = ?,
-      PenyelenggaraKegiatan = ?,
-      KategoriKegiatan = ?,
-      TingkatKegiatan = ?,
-      ImageKegiatan = ?,
-      LinkPendaftaran = ?
-    WHERE KegiatanID = ?
-  `;
-  const values = [
-    NamaKegiatan,
-    DeskripsiKegiatan,
-    StatusKegiatan,
-    TglMulaiKegiatan,
-    TglAkhirKegiatan,
-    TempatKegiatan,
-    PenyelenggaraKegiatan,
-    KategoriKegiatan,
-    TingkatKegiatan,
-    ImageKegiatan,
-    LinkPendaftaran,
-    id,
-  ];
-  db.query(sql, values, (err, result) => {
-    if (err) {
-      console.error("❌ Error update kegiatan:", err);
-      return res.status(500).json({ success: false, message: "Gagal mengupdate kegiatan" });
-    }
-    res.json({ success: true, message: "✅ Kegiatan berhasil diupdate!" });
-  });
+app.put("/kegiatan/:id", upload.single("ImageKegiatan"), (req, res) => {
+    const { id } = req.params;
+
+    const {
+        NamaKegiatan, DeskripsiKegiatan, StatusKegiatan,
+        TglMulaiKegiatan, TglAkhirKegiatan, TempatKegiatan,
+        PenyelenggaraKegiatan, KategoriKegiatan, TingkatKegiatan,
+        LinkPendaftaran
+    } = req.body;
+
+    const newImage = req.file ? req.file.filename : null;
+
+    // Ambil gambar lama
+    const sqlGet = "SELECT ImageKegiatan FROM kegiatan WHERE KegiatanID = ?";
+    db.query(sqlGet, [id], (err, oldData) => {
+        if (err || oldData.length === 0) {
+            return res.status(500).json({ success: false, message: "Kegiatan tidak ditemukan" });
+        }
+
+        const oldImage = oldData[0].ImageKegiatan;
+        const finalImage = newImage || oldImage;
+
+        // Jika user upload gambar baru → hapus gambar lama
+        if (newImage && oldImage) {
+            fs.unlink(path.join(__dirname, "uploads", oldImage), (err) => {
+                if (err) console.warn("⚠️ Gagal hapus gambar lama:", err);
+            });
+        }
+
+        const sql = `
+            UPDATE kegiatan SET
+                NamaKegiatan=?, DeskripsiKegiatan=?, StatusKegiatan=?,
+                TglMulaiKegiatan=?, TglAkhirKegiatan=?, TempatKegiatan=?,
+                PenyelenggaraKegiatan=?, KategoriKegiatan=?, TingkatKegiatan=?,
+                ImageKegiatan=?, LinkPendaftaran=?
+            WHERE KegiatanID=?
+        `;
+
+        const values = [
+            NamaKegiatan, DeskripsiKegiatan, StatusKegiatan,
+            TglMulaiKegiatan, TglAkhirKegiatan || null, TempatKegiatan,
+            PenyelenggaraKegiatan, KategoriKegiatan, TingkatKegiatan,
+            finalImage, LinkPendaftaran, id
+        ];
+
+        db.query(sql, values, (err2) => {
+            if (err2) {
+                console.error("❌ Error update kegiatan:", err2);
+                return res.status(500).json({ success: false, message: "Gagal update kegiatan" });
+            }
+            res.json({ success: true, message: "✅ Kegiatan berhasil diupdate!" });
+        });
+    });
 });
 
+
 // ========== DELETE KEGIATAN ==========
+// HAPUS KEGIATAN
 app.delete("/kegiatan/:id", (req, res) => {
-  const { id } = req.params;
-  const sql = "DELETE FROM kegiatan WHERE KegiatanID = ?";
-  db.query(sql, [id], (err, result) => {
-    if (err) {
-      console.error("❌ Error hapus kegiatan:", err);
-      return res.status(500).json({ success: false, message: "Gagal menghapus kegiatan" });
-    }
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ success: false, message: "Kegiatan tidak ditemukan" });
-    }
-    res.json({ success: true, message: "✅ Kegiatan berhasil dihapus!" });
-  });
+    const { id } = req.params;
+
+    const query = "DELETE FROM kegiatan WHERE KegiatanID = ?";
+    db.query(query, [id], (err, result) => {
+        if (err) {
+            console.error("❌ Error DELETE:", err);
+            return res.status(500).json({ success: false, message: "Gagal menghapus kegiatan" });
+        }
+
+        return res.json({ success: true, message: "Kegiatan berhasil dihapus" });
+    });
 });
+
+
+
 
 // ================== GET DETAIL KEGIATAN ==================
 app.get("/detail-kegiatan/:KegiatanID", (req, res) => {
@@ -337,6 +378,35 @@ app.delete("/hapus-simpan-kegiatan", (req, res) => {
 });
 
 // ================= USERS (CRUD) =================
+// =========== TAMBAH USERS ==========
+// =========== TAMBAH USERS ==========
+app.post("/users", async (req, res) => {
+    const { Username, Nama, Email, Password, Role, NIM, NIP, StatusAkun } = req.body;
+
+    // Validasi
+    if (!Username || !Nama || !Email || !Password || !Role) {
+        return res.json({ success: false, message: "Semua field wajib diisi!" });
+    }
+
+    const query = `
+        INSERT INTO users (Username, Nama, Email, Password, Role, NIM, NIP, StatusAkun)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    db.query(
+        query,
+        [Username, Nama, Email, Password, Role, NIM || null, NIP || null, StatusAkun],
+        (err, result) => {
+            if (err) {
+                console.error("❌ Error tambah user:", err);
+                return res.json({ success: false, message: "Gagal menambah pengguna" });
+            }
+
+            res.json({ success: true, message: "Pengguna berhasil ditambahkan!" });
+        }
+    );
+});
+
 
 // ========== GET ALL USERS ==========
 app.get("/users", (req, res) => {
@@ -376,18 +446,82 @@ app.put("/users/:id", (req, res) => {
   });
 });
 
-// ========== DELETE USER ==========
+// =========== DELETE USER (Proteksi Admin) ===========
 app.delete("/users/:id", (req, res) => {
-  const { id } = req.params;
-  const sql = "DELETE FROM users WHERE UserID = ?";
-  db.query(sql, [id], (err, result) => {
-    if (err) {
-      console.error("❌ Error hapus user:", err);
-      return res.status(500).json({ success: false, message: "Gagal menghapus user" });
-    }
-    res.json({ success: true, message: "✅ User berhasil dihapus!" });
-  });
+    const userId = req.params.id;
+
+    // 1. Cek role user dulu
+    db.query("SELECT Role FROM users WHERE UserID = ?", [userId], (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.json({ success: false, message: "Gagal memeriksa role user." });
+        }
+
+        if (result.length === 0) {
+            return res.json({ success: false, message: "User tidak ditemukan." });
+        }
+
+        const role = result[0].Role;
+
+        // 2. Jika role ADMIN → cek apakah pernah membuat kegiatan
+        if (role === "admin") {
+            db.query(
+                "SELECT COUNT(*) AS jumlah FROM kegiatan WHERE PenyelenggaraID = ?",
+                [userId],
+                (err2, result2) => {
+                    if (err2) {
+                        console.error(err2);
+                        return res.json({ success: false, message: "Gagal memeriksa kegiatan admin." });
+                    }
+
+                    const jumlahKegiatan = result2[0].jumlah;
+
+                    if (jumlahKegiatan > 0) {
+                        // ❗ ADMIN PERNAH BUAT KEGIATAN → TIDAK BOLEH DIHAPUS
+                        return res.json({
+                            success: false,
+                            message:
+                                "Admin tidak dapat dihapus karena terdapat kegiatan yang admin tambahkan sebelumnya."
+                        });
+                    }
+
+                    // Jika admin TIDAK ada kegiatan → boleh dihapus
+                    hapusUserSekalianRelasi(userId, res);
+                }
+            );
+        } else {
+            // 3. Jika bukan admin → langsung hapus
+            hapusUserSekalianRelasi(userId, res);
+        }
+    });
 });
+
+// Fungsi menghapus user + relasi
+function hapusUserSekalianRelasi(userId, res) {
+    // Hapus kegiatan tersimpan
+    db.query("DELETE FROM kegiatantersimpan WHERE UserID = ?", [userId], (err) => {
+        if (err) {
+            console.error(err);
+            return res.json({ success: false, message: "Gagal menghapus data relasi." });
+        }
+
+        // Hapus user
+        db.query("DELETE FROM users WHERE UserID = ?", [userId], (err2) => {
+            if (err2) {
+                console.error(err2);
+                return res.json({ success: false, message: "Gagal menghapus user." });
+            }
+
+            return res.json({
+                success: true,
+                message: "User berhasil dihapus!"
+            });
+        });
+    });
+}
+
+
+
 
 // ========== START SERVER ==========
 

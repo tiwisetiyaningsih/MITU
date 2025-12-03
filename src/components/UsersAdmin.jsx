@@ -1,12 +1,12 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-// Import Gaya
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "./users.css"; 
-// Import Modal (Anda perlu membuat komponen ini)
 import EditUserModal from './EditUserModal'; 
+import ModalTambahUser from "./ModalTambahUser";
+
 
 // ======================================
 // Konfigurasi API
@@ -24,6 +24,9 @@ function UsersAdmin() {
     // State untuk Modal Edit
     const [showModalEdit, setShowModalEdit] = useState(false);
     const [dataToEdit, setDataToEdit] = useState(null);
+
+
+    const [showModalTambah, setShowModalTambah] = useState(false);
 
     // ======================================
     // FUNGSI PENGAMBILAN DATA USERS (Fetch API)
@@ -88,6 +91,7 @@ function UsersAdmin() {
         return (
             (user.Nama && user.Nama.toLowerCase().includes(searchLower)) || 
             (user.Email && user.Email.toLowerCase().includes(searchLower)) ||
+            (user.Username && user.Username.toLowerCase().includes(searchLower)) ||
             (user.NIM && user.NIM.includes(search)) ||
             (user.NIP && user.NIP.includes(search))
         );
@@ -134,37 +138,68 @@ function UsersAdmin() {
     const handleUpdate = async (id, updatedData) => {
         try {
             const response = await axios.put(`${API_BASE_URL}/users/${id}`, updatedData);
+            
             if (response.data.success) {
-                alert(response.data.message);
+                alert("User berhasil diupdate!");
                 handleCloseModalEdit();
             }
         } catch (error) {
             console.error("❌ Error updating user:", error);
-            alert("Gagal mengupdate user! Cek konsol dan status server.");
+            alert("Gagal mengupdate user.");
         }
     };
+
     
     // Logic untuk Hapus (API: DELETE /users/:id)
     const handleDelete = async (id) => {
+        console.log("Menghapus user dengan ID:", id);
+
         const user = semuaUsers.find(item => item.UserID === id)?.Nama;
-        if (window.confirm(`Yakin ingin menghapus pengguna "${user}" (ID: ${id})?`)) {
+        if (window.confirm(`Yakin ingin menghapus pengguna "${user}"?`)) {
             try {
                 const response = await axios.delete(`${API_BASE_URL}/users/${id}`);
+                console.log("Response hapus:", response.data);
+
                 if (response.data.success) {
                     alert(response.data.message);
-                    fetchUsers(); // Refresh daftar setelah hapus
+                    fetchUsers();
+                } else {
+                    // Tampilkan pesan error dari backend (termasuk pesan admin)
+                    alert(response.data.message || "Gagal menghapus user!");
                 }
+
             } catch (error) {
                 console.error("❌ Error deleting user:", error);
-                alert("Gagal menghapus user! Cek konsol dan status server.");
+
+                // Ambil pesan dari backend jika tersedia
+                const msg = error.response?.data?.message || "Gagal menghapus user!";
+                alert(msg);
             }
         }
     };
+
+
+
     
     const handleAddUser = () => {
-        alert("Fungsi Tambah Pengguna akan membuka modal.");
-        // Implementasi modal Tambah Pengguna di sini
+        setShowModalTambah(true);
     };
+
+    const handleAdd = async (newUser) => {
+        try {
+            const response = await axios.post(`${API_BASE_URL}/users`, newUser);
+
+            if (response.data.success) {
+                alert(response.data.message);
+                setShowModalTambah(false);
+                fetchUsers(); 
+            }
+        } catch (error) {
+            console.error("❌ Error adding user:", error);
+            alert("Gagal menambah user!");
+        }
+    };
+
 
     const handleLogout = () => {
         if (window.confirm("Apakah Anda yakin ingin keluar dari Admin Panel?")) {
@@ -219,7 +254,7 @@ function UsersAdmin() {
                     <div className="search-bar-admin">
                         <input
                             type="text"
-                            placeholder="Cari Nama, Email, NIM, atau NIP"
+                            placeholder="Cari Nama, Email, Username, NIM, atau NIP"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
@@ -257,34 +292,38 @@ function UsersAdmin() {
                                 <table className="users-table">
                                     <thead>
                                         <tr>
+                                            <th>NO</th>
                                             <th>NAMA</th>
                                             <th>EMAIL</th>
-                                            <th>ROLE</th>
+                                            <th>USERNAME</th>
+                                            <th className="text-center">ROLE</th>
                                             <th>NIM</th>
                                             <th>NIP</th>
-                                            <th>STATUS AKUN</th>
-                                            <th>AKSI</th>
+                                            <th className="text-center">STATUS AKUN</th>
+                                            <th className="text-center">AKSI</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {filteredUsers.length > 0 ? (
-                                            filteredUsers.map((item) => (
+                                            filteredUsers.map((item, index) => (
                                                 <tr key={item.UserID}>
+                                                    <td>{index + 1}</td>
                                                     <td>{item.Nama}</td>
                                                     <td>{item.Email}</td>
-                                                    <td>
+                                                    <td>{item.Username}</td>
+                                                    <td className="text-center">
                                                         <span className={`badge-role ${getRoleBadgeClass(item.Role)}`}>
                                                             {item.Role}
                                                         </span>
                                                     </td>
                                                     <td>{item.NIM || '-'}</td>
                                                     <td>{item.NIP || '-'}</td>
-                                                    <td>
+                                                    <td className="text-center">
                                                         <span className={`badge-status ${getStatusAkunBadgeClass(item.StatusAkun)}`}>
                                                             {item.StatusAkun}
                                                         </span>
                                                     </td>
-                                                    <td className="aksi">
+                                                    <td className="aksi text-center">
                                                         <div className="aksi-buttons">
                                                             <button
                                                                 className="btn-aksi btn-edit"
@@ -306,7 +345,7 @@ function UsersAdmin() {
                                             ))
                                         ) : (
                                             <tr>
-                                                <td colSpan="7" className="text-center p-3">
+                                                <td colSpan="9" className="text-center p-3">
                                                     Tidak ada pengguna yang ditemukan.
                                                 </td>
                                             </tr>
@@ -328,6 +367,12 @@ function UsersAdmin() {
                     initialData={dataToEdit}
                 />
             )}
+            <ModalTambahUser
+                show={showModalTambah}
+                handleClose={() => setShowModalTambah(false)}
+                handleAdd={handleAdd}
+            />
+
         </div>
     );
 }

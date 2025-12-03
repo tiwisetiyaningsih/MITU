@@ -26,12 +26,12 @@ const SplashScreen = () => {
 
   // Pindah ke login setelah 3 detik
   useEffect(() => {
-    const timer = setTimeout(() => navigate("/login"), 3000);
+    const timer = setTimeout(() => navigate("/login"), 2000);
     return () => clearTimeout(timer);
   }, [navigate]);
 
   return (
-    <div className="splash-container" style={{justifyContent:'center', alignItems:'center', width: '215vh'}}>
+    <div className="splash-container" style={{justifyContent:'center', alignItems:'center', marginLeft: '100vh', textAlign:'center'}}>
       <div className="splash-content">
         {/* Spinner berhenti muter jika isTyping = false */}
         <div className={`splash-spinner ${isTyping ? "spinning" : ""}`}></div>

@@ -2,8 +2,8 @@
 /* PROFILE PAGE LAYOUT */
 /* ======================= */
 .profile-page-custom {
-    /* Batasi lebar konten di layar besar agar tidak terlalu melebar */
-    max-width: 100%; 
+    width: 172vh; 
+    margin-right: 30px;
 }
 
 .section-subtitle-custom {
@@ -67,7 +67,6 @@
 /* Search Bar untuk Tabel */
 .search-table-container {
     position: relative;
-    max-width: 300px; /* Batasi lebar search bar */
     margin-bottom: 20px;
     background-color: #fff;
     border-radius: 8px;
@@ -76,6 +75,7 @@
     align-items: center;
     padding: 8px 15px; /* Tambah padding agar terlihat lebih tinggi */
     border: 1px solid #ddd;
+    max-width: 600px;
 }
 
 .search-table-container i {

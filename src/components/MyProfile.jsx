@@ -289,6 +289,8 @@ function MyProfile() {
             <table className="table saved-activities-table">
               <thead>
                 <tr>
+                  <th>No</th>
+                  <th>Gambar</th>
                   <th>Nama Kegiatan</th>
                   <th>Kategori</th>
                   <th>Tanggal</th>
@@ -299,8 +301,22 @@ function MyProfile() {
               </thead>
               <tbody>
                 {filteredActivities.length > 0 ? (
-                  filteredActivities.map((item) => (
+                  filteredActivities.map((item, index) => (
                     <tr key={item.KegiatanID}>
+                      <td>{index + 1}</td>
+                      <td>
+                        {item.ImageKegiatan ? (
+                          <img
+                              src={`http://localhost:5000/uploads/${item.ImageKegiatan}`}
+                              alt={item.NamaKegiatan}
+                              style={{width: '50px', height:'50px'}}
+                          />
+                      ) : (
+                          <div style={{width: '50px', height:'50px'}}>
+                              No Image
+                          </div>
+                      )}
+                      </td>
                       <td>{item.NamaKegiatan}</td>
                       <td>
                         <span className={`badge category-badge-table category-${item.KategoriKegiatan?.toLowerCase()}`}>

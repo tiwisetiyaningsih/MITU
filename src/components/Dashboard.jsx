@@ -204,19 +204,25 @@ const getDetailKegiatan = async (id) => {
         <h1 className="main-title-custom">Beranda</h1>
 
         {/* KEGIATAN BERLANGSUNG */}
-        <section className="section-berlangsung mb-5">
+        <section className="section-berlangsung mb-4">
           <h2 className="section-title-custom">Kegiatan tengah berlangsung</h2>
-          <div className="row g-3" style={{ paddingLeft: "50px" }}>
+          <div className="row g-3" style={{ paddingLeft: "50px"}}>
             {ongoingKegiatan.length > 0 ? (
               ongoingKegiatan.map((item) => (
-                <div key={item.KegiatanID} className="col-12 col-lg-6">
+                <div key={item.KegiatanID} className="col-12 col-lg-4">
                   <div className="card ongoing-card-custom">
                     <div className="ongoing-card-left">
-                      <img
-                        src="https://via.placeholder.com/200"
-                        alt={item.NamaKegiatan}
-                        className="ongoing-img"
-                      />
+                      {item.ImageKegiatan ? (
+                          <img
+                              src={`http://localhost:5000/uploads/${item.ImageKegiatan}`}
+                              alt={item.NamaKegiatan}
+                              className="ongoing-img"
+                          />
+                      ) : (
+                          <div className="no-image-box">
+                              No Image
+                          </div>
+                      )}
                     </div>
 
                     <div className="ongoing-card-body">
@@ -266,17 +272,21 @@ const getDetailKegiatan = async (id) => {
 
           <h2 className="section-title-custom">Rekomendasi kegiatan</h2>
 
-          <div className="row g-4 mb-3" style={{ paddingLeft: "50px" }}>
+          <div className="row g-4 mb-3 pe-5" style={{ paddingLeft: "50px" }}>
             {rekomendasi.length > 0 ? (
               rekomendasi.map((item) => (
-                <div key={item.KegiatanID} className="col-lg-4 col-md-6">
+                <div key={item.KegiatanID} className="col-lg-3 col-md-6">
                   <div className="card rekomendasi-card-custom">
                     <div className="card-header-rekomendasi">
-                      <img
-                        src="https://via.placeholder.com/200"
-                        alt={item.NamaKegiatan}
-                        className="card-img-rekomendasi"
-                      />
+                      {item.ImageKegiatan ? (
+                          <img
+                              src={`http://localhost:5000/uploads/${item.ImageKegiatan}`}
+                              alt={item.NamaKegiatan}
+                              className="card-img-rekomendasi"
+                          />
+                      ) : (
+                          <div className="no-image-box">No Image</div>
+                      )}
                     </div>
 
                     <div className="card-body-rekomendasi">
