@@ -389,17 +389,39 @@
 }
 
 .btn-edit {
-    color: #ffc107;
+    color: #ffb547;
 }
 
 .btn-edit:hover {
-    color: #d9a300;
+    color: #FF8042;
 }
-
 .btn-delete {
     color: #dc3545;
 }
 
 .btn-delete:hover {
     color: #a71d2a;
+}
+
+.text-ellipsis {
+  max-width: 220px;        /* atur sesuai kebutuhan */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.ellipsis-nama {
+  max-width: 200px;
+}
+
+.ellipsis-lokasi {
+  max-width: 120px;
+}
+
+.ellipsis-judul {
+  max-width: 420px;
+}
+.ellipsis-judul-berlangsung {
+  max-width: 200px;
 }

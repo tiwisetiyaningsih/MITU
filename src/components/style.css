@@ -1,6 +1,6 @@
 body {
   margin: 0;
-  font-family: "Poppins", sans-serif;
+  font-family: "Open Sains", sans-serif;
   background-color: #fff;
 
 }
@@ -49,7 +49,8 @@ body {
 
 .login-illustration {
   width: 250px;
-  margin-bottom: 20px;
+  height: 250px;
+  margin-bottom: 10px;
 }
 
 .login-right h2 {
@@ -60,7 +61,7 @@ body {
 .login-right form {
   display: flex;
   flex-direction: column;
-  width: 60%;
+  width: 70%;
 }
 
 .login-right input {
@@ -186,13 +187,132 @@ body {
   opacity: 1;
 }
 
-/* Pastikan di layar kecil tetap rapi */
-@media (max-width: 480px) {
-  .eye-toggle {
-    right: 15px;
-    width: 18px;
-    height: 18px;
-  }
+/* ===================== */
+/* Form input interaktif */
+/* ===================== */
+.login-right input {
+  padding: 12px !important;
+  margin: 8px 0 !important;
+  border: 2px solid transparent !important;
+  border-radius: 12px !important;
+  background-color: #ffe6e6 !important;
+  outline: none !important;
+  font-size: 14px !important;
+  transition: all 0.3s ease !important;
+  color: #5e0000;
+}
+
+/* Hover efek */
+.login-right input:hover {
+  border-color: #b30000 !important;
+  box-shadow: 0 0 5px rgba(179, 0, 0, 0.5) !important;
+  background-color: #ffe6e6 !important;
+}
+
+/* Focus efek (klik di input) */
+.login-right input:focus {
+  border-color: #800000 !important;
+  box-shadow: 0 0 8px rgba(128, 0, 0, 0.6) !important;
+  background-color: #ffe6e6 !important;
+}
+
+/* Password field tetap interaktif */
+.password-field input:hover,
+.password-field input:focus {
+  border-color: #b30000 !important;
+  box-shadow: 0 0 5px rgba(179, 0, 0, 0.5) !important;
+  background-color: #ffe6e6 !important;
+}
+
+/* Tombol tetap interaktif */
+.login-right button {
+  margin-top: 10px !important;
+  padding: 12px !important;
+  border: none !important;
+  border-radius: 30px !important;
+  background-color: #b30000 !important;
+  color: #fff0f0 !important;
+  font-size: 16px !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+}
+
+.login-right button:hover {
+  background-color: #800000 !important;
+  transform: scale(1.03) !important;
 }
 
 
+/* Pastikan di layar kecil tetap rapi */
+/* ======================= */
+
+@media (max-width: 768px) {
+  .login-page {
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 100vh !important;
+    width: 150% !important;
+    padding: 0 !important;
+  }
+
+  /* Sembunyikan bagian kiri */
+  .login-left {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Bagian kanan full width sesuai device */
+  .login-right {
+    width: 90% !important; /* Bisa diganti 95% jika mau lebih full */
+    max-width: 400px !important;
+    flex: none !important;
+    padding: 20px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+
+  .login-right form {
+    width: 100% !important;
+  }
+
+  .login-illustration {
+    width: 180px !important;
+    max-width: 80% !important;
+    margin-bottom: 20px !important;
+  }
+
+  .login-right h2 {
+    text-align: center !important;
+  }
+}
+
+/* 1 baris 2 kolom form */
+.form-row {
+  display: flex;
+  gap: 10px; /* jarak antar kolom */
+  margin-bottom: 8px;
+}
+
+/* Semua input tetap responsive */
+.form-row input {
+  flex: 1; /* sama rata, menyesuaikan ruang */
+}
+
+/* Password full width tetap */
+.password-field input {
+  width: 100% !important;
+}
+
+/* RESPONSIVE HP: ubah jadi 1 kolom */
+@media (max-width: 768px) {
+  .form-row {
+    flex-direction: column !important;
+  }
+}

@@ -14,14 +14,16 @@
 .dashboard-container {
   display: flex;
   min-height: 100vh;
-  background-color:#f8f9ff;
+  flex-direction: row;
+  min-width: 200vh;
+  background-color: #f8f9ff;
 }
 
 /* ----------------------------------- */
 /* SIDEBAR (KIRI) */
 /* ----------------------------------- */
 .sidebar-custom {
-  width: 250px; 
+  min-width: 16%; 
   background-color: var(--mitu-red);
   color: white;
   padding: 20px 0;
@@ -165,11 +167,9 @@
 }
 
 .main-header-custom {
-    padding: 20px;
     border-bottom: none; /* Hilangkan border bawah jika ada */
     background-color: #ffffff;
-    padding-left: 50px;
-    width: 175vh;
+    padding: 20px;
 }
 
 /* Search Bar */
@@ -180,7 +180,8 @@
     padding: 8px 15px;
     border-radius: 8px;
     border: 1px solid var(--border-color);
-    max-width: 500px;
+    max-width: 50%;
+    margin-left: 30px;
 }
 
 .search-bar-custom i {
@@ -191,7 +192,6 @@
 .search-bar-custom input {
     border: none;
     outline: none;
-    width: 100%;
     font-size: 16px;
 }
 
@@ -202,7 +202,6 @@
     margin-top: 20px;
     margin-bottom: 15px;
     padding-left: 50px;
-    width: 175vh;
 }
 
 .section-title-custom {
@@ -576,4 +575,24 @@
   border-radius: 8px;
   color: #555;
   font-weight: 600;
+}
+
+.text-ellipsis {
+  max-width: 220px;        /* atur sesuai kebutuhan */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.ellipsis-nama {
+  max-width: 260px;
+}
+
+.ellipsis-lokasi {
+  max-width: 200px;
+}
+
+.ellipsis-judul {
+  max-width: 420px;
 }

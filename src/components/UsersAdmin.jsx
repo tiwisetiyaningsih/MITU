@@ -58,8 +58,8 @@ function UsersAdmin() {
              setUserAdmin(adminData);
         } else {
              setUserAdmin({
-                Nama: "Admin Panel",
-                Email: "admin@telkomuniversity.ac.id",
+                Nama: "Memuat...",
+                Email: "Memuat...",
              });
         }
         

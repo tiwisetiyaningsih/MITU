@@ -15,6 +15,8 @@ function Dashboard() {
   const [saved, setSaved] = useState({});
   const [selectedKegiatan, setSelectedKegiatan] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("Semua");
+
 
 
 
@@ -35,7 +37,7 @@ function Dashboard() {
 
   // ====== FETCH DATA DARI SERVER ======
   useEffect(() => {
-    const fetchData = async () => {
+    const tampilDaftarKegiatan = async () => {
       try {
         const res = await axios.get("http://localhost:5000/kegiatan");
         setKegiatan(res.data);
@@ -44,13 +46,13 @@ function Dashboard() {
       }
     };
 
-    fetchData();
+    tampilDaftarKegiatan();
   }, []);
 
   useEffect(() => {
     if (!user || !user.UserID) return;
 
-    const fetchSaved = async () => {
+    const tampilSimpanan = async () => {
       try {
         const res = await axios.get(`http://localhost:5000/kegiatan-tersimpan/${user.UserID}`);
 
@@ -66,7 +68,7 @@ function Dashboard() {
       }
     };
 
-    fetchSaved();
+    tampilSimpanan();
   }, [user]);
 
 
@@ -92,11 +94,21 @@ function Dashboard() {
 
 
 
-  const rekomendasi = kegiatan.filter((item) =>
-      item.StatusKegiatan !== "Berlangsung" &&
-      (filter === "Semua" || item.KategoriKegiatan === filter) &&
-      item.NamaKegiatan.toLowerCase().includes(search.toLowerCase())
-  );
+  const rekomendasi = kegiatan.filter((item) => {
+    const kategoriMatch =
+      filter === "Semua" ? true : item.KategoriKegiatan === filter;
+
+    const searchMatch = item.NamaKegiatan
+      .toLowerCase()
+      .includes(search.toLowerCase());
+
+    const statusMatch =
+      statusFilter === "Semua"
+        ? true
+        : item.StatusKegiatan?.toLowerCase() === statusFilter.toLowerCase();
+
+    return kategoriMatch && searchMatch && statusMatch;
+  });
 
   // ====== KATEGORI ======
   const kategoriList = ["Semua", "Event", "Seminar", "Webinar", "Organisasi", "Kompetisi", "Pelatihan"];
@@ -110,7 +122,7 @@ function Dashboard() {
   };
 
   // ====== SIMPAN KEGIATAN ======
-  const simpanKegiatan = async (kegiatanID) => {
+  const simpan = async (kegiatanID) => {
     if (!user || !user.UserID) {
       alert("Harap login terlebih dahulu");
       return;
@@ -134,7 +146,7 @@ function Dashboard() {
   };
 
 // ====== LIHAT DETAIL KEGIATAN ======
-const getDetailKegiatan = async (id) => {
+const tampilDetailKegiatan = async (id) => {
   try {
     const res = await axios.get(`http://localhost:5000/detail-kegiatan/${id}`);
 
@@ -206,7 +218,16 @@ const getDetailKegiatan = async (id) => {
         {/* KEGIATAN BERLANGSUNG */}
         <section className="section-berlangsung mb-4">
           <h2 className="section-title-custom">Kegiatan tengah berlangsung</h2>
-          <div className="row g-3" style={{ paddingLeft: "50px"}}>
+          <div style={{
+            display: "flex",
+            gap: "16px",
+            overflowX: "auto",
+            overflowY: "hidden",
+            marginLeft: "50px",
+            marginRight: "20px",
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+          }}>
             {ongoingKegiatan.length > 0 ? (
               ongoingKegiatan.map((item) => (
                 <div key={item.KegiatanID} className="col-12 col-lg-4">
@@ -258,7 +279,73 @@ const getDetailKegiatan = async (id) => {
 
         {/* REKOMENDASI */}
         <section className="section-rekomendasi">
-          <div className="filter-buttons-custom mb-3" style={{ paddingLeft: "50px" }}>
+          <div
+            className="mb-3"
+            style={{
+              maxWidth: "300px",
+              paddingLeft: "50px" 
+            }}
+          >
+            <label
+              className="form-label fw-medium"
+              style={{
+                fontSize: "13.5px",
+                color: "#6c6a6aff",
+                marginBottom: "6px",
+              }}
+            >
+              Filter by status
+            </label>
+
+            <select
+              className="form-select"
+              style={{
+                borderRadius: "10px",
+                padding: "10px",
+                border: "2px solid #d90000",
+                fontSize: "14px",
+                transition: "0.25s",
+                cursor: "pointer",
+                boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+                color: '#a30000'
+              }}
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              onFocus={(e) => {
+                e.target.style.borderColor = "#a30000";
+                e.target.style.boxShadow = "0 0 0 3px rgba(217,0,0,0.25)";
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = "#d90000";
+                e.target.style.boxShadow = "0 2px 6px rgba(0,0,0,0.05)";
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.borderColor = "#b80000";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.borderColor = "#d90000";
+              }}
+            >
+              <option value="Semua">Semua</option>
+              <option value="Berlangsung">Berlangsung</option>
+              <option value="Akan Datang">Akan Datang</option>
+              <option value="Selesai">Selesai</option>
+            </select>
+          </div>
+          
+          {/* Filter Kategori */}
+          <label
+            className="form-label fw-medium"
+            style={{
+              fontSize: "13.5px",
+              color: "#6c6a6aff",
+              marginBottom: "6px",
+              paddingLeft: "50px"
+            }}
+          >
+            Filter by katergori
+          </label>
+          <div className="filter-buttons-custom mb-4" style={{ paddingLeft: "50px" }}>
             {kategoriList.map((cat) => (
               <button
                 key={cat}
@@ -272,7 +359,15 @@ const getDetailKegiatan = async (id) => {
 
           <h2 className="section-title-custom">Rekomendasi kegiatan</h2>
 
-          <div className="row g-4 mb-3 pe-5" style={{ paddingLeft: "50px" }}>
+          <div className="row g-4 mb-3 me-1 mt-1" style={{
+              minHeight: "400px",
+              overflowY: "auto",
+              overflowX: "hidden",
+              paddingLeft: "50px",
+              paddingRight: "10px",
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+            }}>
             {rekomendasi.length > 0 ? (
               rekomendasi.map((item) => (
                 <div key={item.KegiatanID} className="col-lg-3 col-md-6">
@@ -312,14 +407,14 @@ const getDetailKegiatan = async (id) => {
                     <div className="card-footer-rekomendasi">
                       <button
                         className="btn btn-lihat-custom"
-                        onClick={() => getDetailKegiatan(item.KegiatanID)}
+                        onClick={() => tampilDetailKegiatan(item.KegiatanID)}
                       >
                         Lihat
                       </button>
 
                       <i
                         className={`bi bookmark-icon ${saved[item.KegiatanID] ? "bi-bookmark-fill" : "bi-bookmark"}`}
-                        onClick={() => simpanKegiatan(item.KegiatanID)}
+                        onClick={() => simpan(item.KegiatanID)}
                         style={{ cursor: "pointer" }}
                       ></i>
 
@@ -339,7 +434,7 @@ const getDetailKegiatan = async (id) => {
             <div className="modal-card">
 
               <div className="modal-header">
-                <h3>{selectedKegiatan.NamaKegiatan}</h3>
+                <h4 className="text-ellipsis ellipsis-judul">{selectedKegiatan.NamaKegiatan}</h4>
                 <i
                   className="bi bi-x-lg close-icon"
                   onClick={() => setShowModal(false)}
@@ -355,50 +450,51 @@ const getDetailKegiatan = async (id) => {
                 />
               </div>
 
+              <div style={{ marginBottom: '15px', marginLeft:'20px', marginTop:'5px'}}>
+                  <span className="badge" style={{ marginRight: '5px', color: 'var(--mitu-red)', backgroundColor: '#fff0f0', padding:'10px' }}>
+                        {selectedKegiatan.KategoriKegiatan}
+                  </span>
+              </div>
               {/* Bagian scroll */}
-              <div className="modal-scroll-content" style={{marginLeft:'15px', marginRight:'15px'}}>
+              <div className="modal-scroll-content" style={{marginLeft:'15px', marginRight:'15px', marginTop:'-10px'}}>
 
-                <p><strong>Deskripsi:</strong><br />{selectedKegiatan.DeskripsiKegiatan}</p>
+                    <p><strong>Deskripsi:</strong><br />{selectedKegiatan.DeskripsiKegiatan}</p>
 
-                <p><strong>Status:</strong> {selectedKegiatan.StatusKegiatan}</p>
+                    <p><strong>Status:</strong><br /> {selectedKegiatan.StatusKegiatan}</p>
 
-                <p><strong>Tanggal Mulai:</strong><br />
-                  {formatDate(selectedKegiatan.TglMulaiKegiatan)}
-                </p>
+                    <p><strong>Tanggal Mulai:</strong><br />
+                    {formatDate(selectedKegiatan.TglMulaiKegiatan)}
+                    </p>
 
-                <p><strong>Tanggal Selesai:</strong><br />
-                  {formatDate(selectedKegiatan.TglAkhirKegiatan)}
-                </p>
+                    <p><strong>Tanggal Selesai:</strong><br />
+                    {formatDate(selectedKegiatan.TglAkhirKegiatan)}
+                    </p>
 
-                <p><strong>Tempat:</strong> {selectedKegiatan.TempatKegiatan}</p>
+                    <p><strong>Tempat:</strong><br /> {selectedKegiatan.TempatKegiatan}</p>
 
-                <p><strong>Penyelenggara:</strong> {selectedKegiatan.PenyelenggaraKegiatan}</p>
+                    <p><strong>Penyelenggara:</strong><br /> {selectedKegiatan.PenyelenggaraKegiatan}</p>
 
-                <p><strong>Kategori:</strong> {selectedKegiatan.KategoriKegiatan}</p>
-
-                <p><strong>Tingkat:</strong> {selectedKegiatan.TingkatKegiatan}</p>
+                    <p><strong>Tingkat:</strong><br /> {selectedKegiatan.TingkatKegiatan}</p>
 
               </div>
               <div className="text-center mt-3 mb-3">
-                  <a
-                    href={
-                      selectedKegiatan.LinkPendaftaran.startsWith("http")
-                        ? selectedKegiatan.LinkPendaftaran
-                        : "https://" + selectedKegiatan.LinkPendaftaran
-                    }
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-lihat-custom"
-                    style={{ padding: "10px 30px" }}
-                  >
-                    Buka Link Pendaftaran
-                  </a>
+                    <a
+                        href={
+                        selectedKegiatan.LinkPendaftaran.startsWith("http")
+                            ? selectedKegiatan.LinkPendaftaran
+                            : "https://" + selectedKegiatan.LinkPendaftaran
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-lihat-custom"
+                        style={{ padding: "10px 30px" }}
+                    >
+                        Buka Link Pendaftaran
+                    </a>
                 </div>
-            </div>
+              </div>
           </div>
         )}
-
-
       </main>
     </div>
   );

@@ -44,7 +44,7 @@ function MyProfile() {
   // FUNGSI: AMBIL DATA DARI BACKEND
   // ===================================
   // Menggunakan useCallback untuk stabilitas fungsi
-  const fetchSavedActivities = useCallback(async (userID) => {
+  const tampilSimpanan = useCallback(async (userID) => {
     if (!userID) return;
     try {
       setActivities([]); // Reset state
@@ -94,13 +94,13 @@ function MyProfile() {
       
       // Panggil fungsi fetch kegiatan
       if (userID) {
-        fetchSavedActivities(userID);
+        tampilSimpanan(userID);
       }
     } else {
        setUser(null);
        navigate("/login"); 
     }
-  }, [navigate, fetchSavedActivities]); 
+  }, [navigate, tampilSimpanan]); 
 
   
   // ===================================
@@ -117,7 +117,7 @@ function MyProfile() {
   // ===================================
   // FUNGSI: HAPUS KEGIATAN (API DELETE)
   // ===================================
-  const handleDeleteActivity = async (kegiatanID, namaKegiatan) => {
+  const hapusSimpanan = async (kegiatanID, namaKegiatan) => {
     if (!user || !user.UserID) {
       alert("Detail pengguna tidak ditemukan. Tidak dapat menghapus kegiatan.");
       return;
@@ -143,7 +143,7 @@ function MyProfile() {
 
         if (res.ok && data.success) {
           alert(`Kegiatan "${namaKegiatan}" berhasil dihapus dari daftar simpanan.`);
-          fetchSavedActivities(user.UserID);
+          tampilSimpanan(user.UserID);
         } else {
           throw new Error(data.message || "Terjadi kesalahan.");
         }
@@ -166,7 +166,7 @@ function MyProfile() {
   };
 
   // ====== LIHAT DETAIL KEGIATAN ======
-  const getDetailKegiatan = async (id) => {
+  const tampilDetailKegiatan = async (id) => {
     try {
       const res = await axios.get(`http://localhost:5000/detail-kegiatan/${id}`);
 
@@ -312,19 +312,34 @@ function MyProfile() {
                               style={{width: '50px', height:'50px'}}
                           />
                       ) : (
-                          <div style={{width: '50px', height:'50px'}}>
-                              No Image
-                          </div>
+                          <div style={{width: '50px', height:'50px', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.5rem', textAlign: 'center'}}>
+                              No Image
+                          </div>
                       )}
                       </td>
-                      <td>{item.NamaKegiatan}</td>
+                      <td>
+                        <span
+                            className="text-ellipsis ellipsis-nama"
+                            title={item.NamaKegiatan}   // hover lihat full text
+                        >
+                            {item.NamaKegiatan}
+                        </span>
+                        </td>
                       <td>
                         <span className={`badge category-badge-table category-${item.KategoriKegiatan?.toLowerCase()}`}>
                           {item.KategoriKegiatan}
                         </span>
                       </td>
                       <td>{formatDate(item.TglMulaiKegiatan)}</td>
-                      <td>{item.TempatKegiatan}</td>
+                      <td>
+                        <span
+                            className="text-ellipsis ellipsis-lokasi"
+                            title={item.TempatKegiatan}
+                        >
+                            {item.TempatKegiatan}
+                        </span>
+                      </td>
+
                       <td>
                         <span className={`badge status-badge-table status-${item.StatusKegiatan?.toLowerCase().replace(/\s/g, '')}`}>
                           {item.StatusKegiatan}
@@ -334,14 +349,14 @@ function MyProfile() {
                         <i 
                           className="bi bi-eye-fill action-icon text-primary me-2"
                           title="Lihat Detail Kegiatan"
-                          onClick={() => getDetailKegiatan(item.KegiatanID)}
+                          onClick={() => tampilDetailKegiatan(item.KegiatanID)}
                           style={{ cursor: 'pointer' }}
                         ></i>
 
                         <i 
                             className="bi bi-bookmark-x-fill action-icon text-danger" 
                             title="Hapus Kegiatan Tersimpan"
-                            onClick={() => handleDeleteActivity(item.KegiatanID, item.NamaKegiatan)}
+                            onClick={() => hapusSimpanan(item.KegiatanID, item.NamaKegiatan)}
                             style={{cursor: 'pointer'}}
                         ></i>
                       </td>
@@ -364,7 +379,7 @@ function MyProfile() {
             <div className="modal-card">
 
               <div className="modal-header">
-                <h3>{selectedKegiatan.NamaKegiatan}</h3>
+                <h4 className="text-ellipsis ellipsis-judul">{selectedKegiatan.NamaKegiatan}</h4>
                 <i
                   className="bi bi-x-lg close-icon"
                   onClick={() => setShowModal(false)}
@@ -378,48 +393,49 @@ function MyProfile() {
                   alt={selectedKegiatan.NamaKegiatan}
                   className="modal-image"
                 />
+              </div><div style={{ marginBottom: '15px', marginLeft:'20px', marginTop:'5px'}}>
+                  <span className="badge" style={{ marginRight: '5px', color: 'var(--mitu-red)', backgroundColor: '#fff0f0', padding:'10px' }}>
+                        {selectedKegiatan.KategoriKegiatan}
+                  </span>
               </div>
+                {/* Bagian scroll */}
+              <div className="modal-scroll-content" style={{marginLeft:'15px', marginRight:'15px', marginTop:'-10px'}}>
 
-              {/* Bagian scroll */}
-              <div className="modal-scroll-content" style={{marginLeft:'15px', marginRight:'15px'}}>
+                    <p><strong>Deskripsi:</strong><br />{selectedKegiatan.DeskripsiKegiatan}</p>
 
-                <p><strong>Deskripsi:</strong><br />{selectedKegiatan.DeskripsiKegiatan}</p>
+                    <p><strong>Status:</strong><br /> {selectedKegiatan.StatusKegiatan}</p>
 
-                <p><strong>Status:</strong> {selectedKegiatan.StatusKegiatan}</p>
+                    <p><strong>Tanggal Mulai:</strong><br />
+                    {formatDate(selectedKegiatan.TglMulaiKegiatan)}
+                    </p>
 
-                <p><strong>Tanggal Mulai:</strong><br />
-                  {formatDate(selectedKegiatan.TglMulaiKegiatan)}
-                </p>
+                    <p><strong>Tanggal Selesai:</strong><br />
+                    {formatDate(selectedKegiatan.TglAkhirKegiatan)}
+                    </p>
 
-                <p><strong>Tanggal Selesai:</strong><br />
-                  {formatDate(selectedKegiatan.TglAkhirKegiatan)}
-                </p>
+                    <p><strong>Tempat:</strong><br /> {selectedKegiatan.TempatKegiatan}</p>
 
-                <p><strong>Tempat:</strong> {selectedKegiatan.TempatKegiatan}</p>
+                    <p><strong>Penyelenggara:</strong><br /> {selectedKegiatan.PenyelenggaraKegiatan}</p>
 
-                <p><strong>Penyelenggara:</strong> {selectedKegiatan.PenyelenggaraKegiatan}</p>
-
-                <p><strong>Kategori:</strong> {selectedKegiatan.KategoriKegiatan}</p>
-
-                <p><strong>Tingkat:</strong> {selectedKegiatan.TingkatKegiatan}</p>
+                    <p><strong>Tingkat:</strong><br /> {selectedKegiatan.TingkatKegiatan}</p>
 
               </div>
               <div className="text-center mt-3 mb-3">
-                  <a
-                    href={
-                      selectedKegiatan.LinkPendaftaran.startsWith("http")
-                        ? selectedKegiatan.LinkPendaftaran
-                        : "https://" + selectedKegiatan.LinkPendaftaran
-                    }
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-lihat-custom"
-                    style={{ padding: "10px 30px" }}
-                  >
-                    Buka Link Pendaftaran
-                  </a>
+                    <a
+                        href={
+                        selectedKegiatan.LinkPendaftaran.startsWith("http")
+                            ? selectedKegiatan.LinkPendaftaran
+                            : "https://" + selectedKegiatan.LinkPendaftaran
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-lihat-custom"
+                        style={{ padding: "10px 30px" }}
+                    >
+                        Buka Link Pendaftaran
+                    </a>
                 </div>
-            </div>
+              </div>
           </div>
         )}
       </main>

@@ -12,7 +12,7 @@ function Login() {
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  const login = async (e) => {
     e.preventDefault();
     try {
       const res = await axios.post("http://localhost:5000/login", {
@@ -60,7 +60,7 @@ function Login() {
         <h2>Login</h2>
         <img src={ilustrasi} alt="Login Illustration" className="login-illustration" />
 
-        <form onSubmit={handleLogin}>
+        <form onSubmit={login}>
           <input
             type="text"
             placeholder="Username"

@@ -129,9 +129,6 @@ function EditUserModal({ show, handleClose, handleUpdate, initialData }) {
                                 </Form.Group>
                             </Col>
                         )}
-                    </Row>
-
-                    <Row>
                         <Col md={6}>
                             <Form.Group className="mb-3">
                                 <Form.Label>Status Akun</Form.Label>
@@ -145,21 +142,7 @@ function EditUserModal({ show, handleClose, handleUpdate, initialData }) {
                                 </Form.Select>
                             </Form.Group>
                         </Col>
-
-                        <Col md={6}>
-                            <Form.Group className="mb-3">
-                                <Form.Label>Password (Opsional)</Form.Label>
-                                <Form.Control
-                                    type="password"
-                                    name="Password"
-                                    value={formData.Password}
-                                    onChange={handleChange}
-                                    placeholder="Kosongkan jika tidak diganti"
-                                />
-                            </Form.Group>
-                        </Col>
                     </Row>
-
                 </Form>
             </Modal.Body>
 
@@ -168,7 +151,7 @@ function EditUserModal({ show, handleClose, handleUpdate, initialData }) {
                     Tutup
                 </Button>
                 <Button variant="primary" onClick={handleSubmit}>
-                    Simpan
+                    Simpan Perubahan
                 </Button>
             </Modal.Footer>
         </Modal>

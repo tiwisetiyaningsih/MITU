@@ -25,7 +25,7 @@ function ModalTambahUser({ show, handleClose, handleAdd }) {
         }));
     };
 
-    const handleSubmit = () => {
+    const tambahUser = () => {
         const dataToSend = {
             ...formData,
             NIM: formData.Role === "Mahasiswa" ? formData.NIM : "",
@@ -171,7 +171,7 @@ function ModalTambahUser({ show, handleClose, handleAdd }) {
 
             <Modal.Footer>
                 <Button variant="secondary" onClick={handleClose}>Batal</Button>
-                <Button variant="primary" onClick={handleSubmit}>Tambah</Button>
+                <Button variant="primary" onClick={tambahUser}>Tambah</Button>
             </Modal.Footer>
         </Modal>
     );

@@ -35,7 +35,7 @@ function Register() {
     setForm(f => ({ ...f, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
+  const register = async (e) => {
     e.preventDefault();
     setMessage("");
     console.log("Data dikirim ke server:", form);
@@ -68,52 +68,58 @@ function Register() {
 
       <div className="login-right">
         <h2>Register</h2>
-        <img src={ilustrasi} alt="Register Illustration" className="login-illustration" />
+        <img src={ilustrasi} alt="Register Illustration" className="login-illustration"/>
 
-        <form onSubmit={handleSubmit}>
-          <input
-            name="nama"
-            placeholder="Nama Lengkap"
-            value={form.nama}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={form.email}
-            onChange={handleChange}
-            required
-          />
-          <input
-            name="username"
-            placeholder="Username"
-            value={form.username}
-            onChange={handleChange}
-            required
-          />
-
-          {/* Tampilkan input NIM/NIP sesuai role */}
-          {form.role === "Mahasiswa" && (
+        <form onSubmit={register}>
+          {/* BARIS 1: Nama & Email */}
+          <div className="form-row">
             <input
-              name="NIM"
-              placeholder="NIM"
-              value={form.NIM}
+              name="nama"
+              placeholder="Nama Lengkap"
+              value={form.nama}
               onChange={handleChange}
               required
             />
-          )}
-          {form.role === "Dosen" && (
             <input
-              name="NIP"
-              placeholder="NIP"
-              value={form.NIP}
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={form.email}
               onChange={handleChange}
               required
             />
-          )}
+          </div>
 
+          {/* BARIS 2: Username & NIM/NIP */}
+          <div className="form-row">
+            <input
+              name="username"
+              placeholder="Username"
+              value={form.username}
+              onChange={handleChange}
+              required
+            />
+            {form.role === "Mahasiswa" && (
+              <input
+                name="NIM"
+                placeholder="NIM"
+                value={form.NIM}
+                onChange={handleChange}
+                required
+              />
+            )}
+            {form.role === "Dosen" && (
+              <input
+                name="NIP"
+                placeholder="NIP"
+                value={form.NIP}
+                onChange={handleChange}
+                required
+              />
+            )}
+          </div>
+
+          {/* BARIS 3: Password full width */}
           <div className="password-field">
             <input
               type={showPassword ? "text" : "password"}
@@ -153,6 +159,7 @@ function Register() {
 
           <button type="submit">Daftar</button>
         </form>
+
 
           <p className={`login-message ${message.includes("✅") ? "success" : message.includes("❌") ? "error" : ""}`}>
           {message}

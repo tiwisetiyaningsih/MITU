@@ -312,33 +312,47 @@
 
 
 /* Aksi Buttons */
-.aksi-buttons {
-    display: flex;
-    gap: 8px;
-    white-space: nowrap; 
-}
-
 .btn-aksi {
     background: none;
     border: none;
     padding: 5px;
     cursor: pointer;
     font-size: 16px;
-    transition: color 0.2s;
 }
 
-.btn-edit {
-    color: #007bff;
+.btn-edit i {
+    color: #eb5200;
 }
 
-.btn-edit:hover {
-    color: #0056b3;
+.btn-edit:hover i {
+    color: #d85300;
 }
 
-.btn-delete {
+.btn-delete i {
     color: var(--mitu-red);
 }
 
-.btn-delete:hover {
+.btn-delete:hover i {
     color: var(--mitu-dark-red);
+}
+
+
+.text-ellipsis {
+  max-width: 220px;        /* atur sesuai kebutuhan */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.ellipsis-nama {
+  max-width: 200px;
+}
+
+.ellipsis-lokasi {
+  max-width: 120px;
+}
+
+.ellipsis-judul {
+  max-width: 420px;
 }

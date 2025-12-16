@@ -13,7 +13,7 @@ const API_BASE_URL = 'http://localhost:5000';
 
 function DashboardAdmin() {
     const [semuaKegiatan, setSemuaKegiatan] = useState([]);
-    const [search, setSearch] = useState("");
+    const [search, cariKegiatan] = useState("");
     const [userAdmin, setUserAdmin] = useState(null); 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -23,12 +23,15 @@ function DashboardAdmin() {
     const [formData, setFormData] = useState({});
     const [showModalEdit, setShowModalEdit] = useState(false);
     const [dataToEdit, setDataToEdit] = useState(null);
+
+    const [selectedKegiatan, setSelectedKegiatan] = useState(null);
+    const [showDetailModal, setShowDetailModal] = useState(false);
     
 
     // ======================================
     // FUNGSI PENGAMBILAN DATA KEGIATAN (Fetch)
     // ======================================
-    const fetchKegiatan = async () => {
+    const tampilDaftarKegiatan = async () => {
         setLoading(true);
         setError(null);
         try {
@@ -51,7 +54,7 @@ function DashboardAdmin() {
         } else {
              setUserAdmin({ Nama: "Memuat...", Email: "Memuat..." });
         }
-        fetchKegiatan();
+        tampilDaftarKegiatan();
     }, [navigate]);
 
 
@@ -105,7 +108,7 @@ function DashboardAdmin() {
     // ======================================
     // MODAL TAMBAH KEGIATAN — FIXED
     // ======================================
-    const handleSaveKegiatan = async () => {
+    const tambahKegiatan = async () => {
         try {
             const fd = new FormData();
 
@@ -131,7 +134,7 @@ function DashboardAdmin() {
 
             if (res.data.success) {
                 alert("Kegiatan berhasil ditambahkan!");
-                fetchKegiatan();
+                tampilDaftarKegiatan();
                 handleCloseModal();
             } else {
                 alert("Gagal menambahkan kegiatan.");
@@ -156,7 +159,7 @@ function DashboardAdmin() {
         setShowModalEdit(true);
     };
 
-    const handleUpdateKegiatan = async () => {
+    const editKegiatan = async () => {
         try {
             const fd = new FormData();
             fd.append("NamaKegiatan", dataToEdit.NamaKegiatan);
@@ -180,7 +183,7 @@ function DashboardAdmin() {
 
             if (res.data.success) {
                 alert("Kegiatan berhasil diperbarui!");
-                fetchKegiatan();
+                tampilDaftarKegiatan();
                 setShowModalEdit(false);
             }
 
@@ -194,7 +197,7 @@ function DashboardAdmin() {
     // ======================================
     // DELETE KEGIATAN — FIXED
     // ======================================
-    const handleDelete = async (id) => {
+    const hapusKegiatan = async (id) => {
         const nama = semuaKegiatan.find(item => item.KegiatanID === id)?.NamaKegiatan;
 
         if (!window.confirm(`Yakin ingin menghapus kegiatan "${nama}"?`)) return;
@@ -213,6 +216,23 @@ function DashboardAdmin() {
         }
     };
 
+
+    //  lihat detail
+    const tampilDetailKegiatan = async (id) => {
+        try {
+            const res = await axios.get(`${API_BASE_URL}/detail-kegiatan/${id}`);
+
+            if (res.data.success) {
+                setSelectedKegiatan(res.data.data);
+                setShowDetailModal(true);
+            } else {
+                alert("Data detail tidak ditemukan");
+            }
+        } catch (err) {
+            console.error("❌ Error detail kegiatan:", err.response || err);
+            alert("Gagal mengambil detail kegiatan");
+        }
+    };
 
 
     // ======================================
@@ -258,7 +278,7 @@ function DashboardAdmin() {
                         <div>
                             <div className="admin-name">{userAdmin ? userAdmin.Nama : "Memuat..."}</div>
                             <div className="admin-email">
-                                {userAdmin ? (userAdmin.Email || "email@admin.com") : "Memuat..."}
+                                {userAdmin ? (userAdmin.Email || "Memuat...") : "Memuat..."}
                             </div>
                         </div>
                     </div>
@@ -274,7 +294,7 @@ function DashboardAdmin() {
                             type="text"
                             placeholder="Cari Kegiatan"
                             value={search}
-                            onChange={(e) => setSearch(e.target.value)}
+                            onChange={(e) => cariKegiatan(e.target.value)}
                         />
                     </div>
                 </header>
@@ -294,6 +314,7 @@ function DashboardAdmin() {
                                                 src={`http://localhost:5000/uploads/${item.ImageKegiatan}`}
                                                 alt={item.NamaKegiatan}
                                                 className="card-image-admin"
+                                                style={{height:'116px'}}
                                             />
                                         ) : (
                                             <p className="text-center" style={{width:'100px', height:'100px', alignItems:'center', justifyContent:'center'}}>
@@ -302,7 +323,7 @@ function DashboardAdmin() {
                                         )}
                                     </div>
                                     <div className="card-content-admin">
-                                        <h5 className="card-title-admin">{item.NamaKegiatan}</h5>
+                                        <h5 className="card-title-admin text-ellipsis ellipsis-nama">{item.NamaKegiatan}</h5>
                             
                                         <div 
                                             className={`badge-card-kategori ${getKategoriBadgeClass(item.KategoriKegiatan)}`}
@@ -350,7 +371,7 @@ function DashboardAdmin() {
                                             <th>TANGGAL AKHIR</th>
                                             <th>LOKASI</th>
                                             <th>STATUS</th>
-                                            <th>AKSI</th>
+                                            <th className="text-center">AKSI</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -370,16 +391,36 @@ function DashboardAdmin() {
                                                         </p>
                                                     )}
                                                 </td>
-                                                <td>{item.NamaKegiatan}</td>
+                                                <td>
+                                                    <span
+                                                        className="text-ellipsis ellipsis-nama"
+                                                        title={item.NamaKegiatan}
+                                                    >
+                                                        {item.NamaKegiatan}
+                                                    </span>
+                                                </td>
                                                 <td><span className={`badge-kategori-admin ${getKategoriBadgeClass(item.KategoriKegiatan)}`}>{item.KategoriKegiatan}</span></td>
                                                 <td>{formatDate(item.TglMulaiKegiatan)}</td>
                                                 <td>{formatDate(item.TglAkhirKegiatan)}</td>
-                                                <td>{item.TempatKegiatan}</td>
+                                                <td>
+                                                <span
+                                                    className="text-ellipsis ellipsis-lokasi"
+                                                    title={item.TempatKegiatan}
+                                                >
+                                                    {item.TempatKegiatan}
+                                                </span>
+                                                </td>
                                                 <td><span className={getStatusBadgeClass(item.StatusKegiatan)}>{item.StatusKegiatan}</span></td>
                                                 <td className="aksi">
                                                     <div className="aksi-buttons">
+                                                        <i 
+                                                        className="bi bi-eye-fill action-icon text-primary me-2"
+                                                        title="Lihat Detail Kegiatan"
+                                                        onClick={() => tampilDetailKegiatan(item.KegiatanID)}
+                                                        style={{ cursor: 'pointer' }}
+                                                        ></i>
                                                         <button className="btn-aksi btn-edit" onClick={() => handleShowEdit(item)}><i className="bi bi-pencil-square"></i></button>
-                                                        <button className="btn-aksi btn-delete" onClick={() => handleDelete(item.KegiatanID)}><i className="bi bi-trash-fill"></i></button>
+                                                        <button className="btn-aksi btn-delete" onClick={() => hapusKegiatan(item.KegiatanID)}><i className="bi bi-trash-fill"></i></button>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -395,7 +436,7 @@ function DashboardAdmin() {
             </main>
             {/* MODAL TAMBAH KEGIATAN */}
             <Modal show={showModal} onHide={handleCloseModal} size="lg" centered>
-                <Form onSubmit={(e) => { e.preventDefault(); handleSaveKegiatan(); }}>
+                <Form onSubmit={(e) => { e.preventDefault(); tambahKegiatan(); }}>
                     <Modal.Header closeButton>
                         <Modal.Title>Tambah Kegiatan</Modal.Title>
                     </Modal.Header>
@@ -447,7 +488,16 @@ function DashboardAdmin() {
                             </Form.Group>
                             <Form.Group as={Col}>
                                 <Form.Label>Tingkat</Form.Label>
-                                <Form.Control type="text" value={formData.TingkatKegiatan || ""} onChange={e => setFormData({...formData, TingkatKegiatan: e.target.value})}/>
+                                <Form.Select
+                                    value={formData.TingkatKegiatan || ""}
+                                    onChange={e => setFormData({...formData, TingkatKegiatan: e.target.value})}
+                                    required
+                                >
+                                    <option value="">Pilih Tingkat</option>
+                                    <option value="Internasional">Internasional</option>
+                                    <option value="Nasional">Nasional</option>
+                                    <option value="Regional">Regional / Kampus</option>
+                                </Form.Select>
                             </Form.Group>
                         </Row>
 
@@ -481,7 +531,7 @@ function DashboardAdmin() {
 
             {/* MODAL EDIT KEGIATAN */}
             <Modal show={showModalEdit} onHide={() => setShowModalEdit(false)} size="lg" centered>
-                <Form onSubmit={(e) => { e.preventDefault(); handleUpdateKegiatan(); }}>
+                <Form onSubmit={(e) => { e.preventDefault(); editKegiatan(); }}>
                     <Modal.Header closeButton>
                         <Modal.Title>Edit Kegiatan</Modal.Title>
                     </Modal.Header>
@@ -536,7 +586,16 @@ function DashboardAdmin() {
                                     </Form.Group>
                                     <Form.Group as={Col}>
                                         <Form.Label>Tingkat</Form.Label>
-                                        <Form.Control type="text" value={dataToEdit.TingkatKegiatan || ""} onChange={e => setDataToEdit({...dataToEdit, TingkatKegiatan: e.target.value})}/>
+                                        <Form.Select
+                                        value={dataToEdit.TingkatKegiatan || ""}
+                                        onChange={e => setDataToEdit({...dataToEdit, TingkatKegiatan: e.target.value})}
+                                        required
+                                    >
+                                        <option value="">Pilih Tingkat</option>
+                                        <option value="Internasional">Internasional</option>
+                                        <option value="Nasional">Nasional</option>
+                                        <option value="Regional">Regional / Kampus</option>
+                                    </Form.Select>
                                     </Form.Group>
                                 </Row>
 
@@ -569,6 +628,72 @@ function DashboardAdmin() {
                     </Modal.Footer>
                 </Form>
             </Modal>
+            {/* ================= MODAL DETAIL KEGIATAN ================= */}
+            {showDetailModal && selectedKegiatan && (
+            <div className="modal-overlay">
+                <div className="modal-card">
+
+                <div className="modal-header">
+                    <h4 className="text-ellipsis ellipsis-judul">{selectedKegiatan.NamaKegiatan}</h4>
+                    <i
+                    className="bi bi-x-lg close-icon"
+                    onClick={() => setShowDetailModal(false)}
+                    ></i>
+                </div>
+
+                {/* Gambar Tetap */}
+                <div className="modal-image-wrapper">
+                    <img
+                    src={`http://localhost:5000/uploads/${selectedKegiatan.ImageKegiatan}`}
+                    alt={selectedKegiatan.NamaKegiatan}
+                    className="modal-image"
+                    />
+                </div>
+                <div style={{ marginBottom: '15px', marginLeft:'20px', marginTop:'5px'}}>
+                    <span className="badge" style={{ marginRight: '5px', color: 'var(--mitu-red)', backgroundColor: '#fff0f0', padding:'10px' }}>
+                        {selectedKegiatan.KategoriKegiatan}
+                    </span>
+                </div>
+                {/* Bagian scroll */}
+                 <div className="modal-scroll-content" style={{marginLeft:'15px', marginRight:'15px', marginTop:'-10px'}}>
+
+                    <p><strong>Deskripsi:</strong><br />{selectedKegiatan.DeskripsiKegiatan}</p>
+
+                    <p><strong>Status:</strong><br /> {selectedKegiatan.StatusKegiatan}</p>
+
+                    <p><strong>Tanggal Mulai:</strong><br />
+                    {formatDate(selectedKegiatan.TglMulaiKegiatan)}
+                    </p>
+
+                    <p><strong>Tanggal Selesai:</strong><br />
+                    {formatDate(selectedKegiatan.TglAkhirKegiatan)}
+                    </p>
+
+                    <p><strong>Tempat:</strong><br /> {selectedKegiatan.TempatKegiatan}</p>
+
+                    <p><strong>Penyelenggara:</strong><br /> {selectedKegiatan.PenyelenggaraKegiatan}</p>
+
+                    <p><strong>Tingkat:</strong><br /> {selectedKegiatan.TingkatKegiatan}</p>
+
+                </div>
+                <div className="text-center mt-3 mb-3">
+                    <a
+                        href={
+                        selectedKegiatan.LinkPendaftaran.startsWith("http")
+                            ? selectedKegiatan.LinkPendaftaran
+                            : "https://" + selectedKegiatan.LinkPendaftaran
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-lihat-custom"
+                        style={{ padding: "10px 30px" }}
+                    >
+                        Buka Link Pendaftaran
+                    </a>
+                    </div>
+                </div>
+            </div>
+            )}
         </div>
     );
 }
