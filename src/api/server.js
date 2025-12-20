@@ -45,8 +45,8 @@ app.post("/register", (req, res) => {
     role = "Mahasiswa";
   }
 
-  const checkSql = "SELECT * FROM users WHERE Email = ? OR Username = ?";
-  db.query(checkSql, [email, username], (err, results) => {
+  const checkSql = "SELECT * FROM users WHERE Email = ? OR Username = ? OR NIM = ? OR NIP = ?" ;
+  db.query(checkSql, [email, username, NIM, NIP], (err, results) => {
     if (err) {
       console.error("❌ Error check user:", err);
       return res.status(500).json({ message: "Server error" });

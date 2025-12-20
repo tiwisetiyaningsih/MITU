@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Modal, Button, Form, Row, Col } from "react-bootstrap";
 
-function EditUserModal({ show, handleClose, handleUpdate, initialData }) {
+function EditUserModal({ show, handleClose, editStatusAkun, initialData }) {
     const [formData, setFormData] = useState({
         Nama: "",
         Username: "",
@@ -33,8 +33,10 @@ function EditUserModal({ show, handleClose, handleUpdate, initialData }) {
     };
 
     const handleSubmit = () => {
-        handleUpdate(initialData.UserID, formData);
+        editStatusAkun(initialData.UserID, formData);
     };
+
+    const isReadonly = true;
 
     return (
         <Modal show={show} onHide={handleClose} centered size="lg">
@@ -53,7 +55,7 @@ function EditUserModal({ show, handleClose, handleUpdate, initialData }) {
                                     type="text"
                                     name="Username"
                                     value={formData.Username}
-                                    onChange={handleChange}
+                                    readOnly
                                 />
                             </Form.Group>
                         </Col>
@@ -65,7 +67,7 @@ function EditUserModal({ show, handleClose, handleUpdate, initialData }) {
                                     type="text"
                                     name="Nama"
                                     value={formData.Nama}
-                                    onChange={handleChange}
+                                    readOnly
                                 />
                             </Form.Group>
                         </Col>
@@ -79,7 +81,7 @@ function EditUserModal({ show, handleClose, handleUpdate, initialData }) {
                                     type="email"
                                     name="Email"
                                     value={formData.Email}
-                                    onChange={handleChange}
+                                    readOnly
                                 />
                             </Form.Group>
                         </Col>
@@ -87,15 +89,12 @@ function EditUserModal({ show, handleClose, handleUpdate, initialData }) {
                         <Col md={6}>
                             <Form.Group className="mb-3">
                                 <Form.Label>Role</Form.Label>
-                                <Form.Select
+                                <Form.Control
+                                    type="text"
                                     name="Role"
                                     value={formData.Role}
-                                    onChange={handleChange}
-                                >
-                                    <option>Admin</option>
-                                    <option>Dosen</option>
-                                    <option>Mahasiswa</option>
-                                </Form.Select>
+                                    readOnly
+                                />
                             </Form.Group>
                         </Col>
                     </Row>
@@ -110,7 +109,7 @@ function EditUserModal({ show, handleClose, handleUpdate, initialData }) {
                                         type="text"
                                         name="NIM"
                                         value={formData.NIM}
-                                        onChange={handleChange}
+                                        readOnly
                                     />
                                 </Form.Group>
                             </Col>
@@ -124,7 +123,7 @@ function EditUserModal({ show, handleClose, handleUpdate, initialData }) {
                                         type="text"
                                         name="NIP"
                                         value={formData.NIP}
-                                        onChange={handleChange}
+                                        readOnly
                                     />
                                 </Form.Group>
                             </Col>

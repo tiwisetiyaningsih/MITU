@@ -31,7 +31,7 @@ function UsersAdmin() {
     // ======================================
     // FUNGSI PENGAMBILAN DATA USERS (Fetch API)
     // ======================================
-    const fetchUsers = async () => {
+    const lihatDaftarPengguna = async () => {
         setLoading(true);
         setError(null);
         try {
@@ -63,7 +63,7 @@ function UsersAdmin() {
              });
         }
         
-        fetchUsers();
+        lihatDaftarPengguna();
     }, [navigate]);
 
 
@@ -131,11 +131,11 @@ function UsersAdmin() {
     const handleCloseModalEdit = () => {
         setShowModalEdit(false);
         setDataToEdit(null);
-        fetchUsers(); // Refresh data setelah update
+        lihatDaftarPengguna(); // Refresh data setelah update
     };
 
     // Logic untuk Update (API: PUT /users/:id)
-    const handleUpdate = async (id, updatedData) => {
+    const editStatusAkun = async (id, updatedData) => {
         try {
             const response = await axios.put(`${API_BASE_URL}/users/${id}`, updatedData);
             
@@ -162,7 +162,7 @@ function UsersAdmin() {
 
                 if (response.data.success) {
                     alert(response.data.message);
-                    fetchUsers();
+                    lihatDaftarPengguna();
                 } else {
                     // Tampilkan pesan error dari backend (termasuk pesan admin)
                     alert(response.data.message || "Gagal menghapus user!");
@@ -192,7 +192,7 @@ function UsersAdmin() {
             if (response.data.success) {
                 alert(response.data.message);
                 setShowModalTambah(false);
-                fetchUsers(); 
+                lihatDaftarPengguna(); 
             }
         } catch (error) {
             console.error("❌ Error adding user:", error);
@@ -332,13 +332,13 @@ function UsersAdmin() {
                                                             >
                                                                 <i className="bi bi-pencil-square"></i>
                                                             </button>
-                                                            <button
+                                                            {/* <button
                                                                 className="btn-aksi btn-delete"
                                                                 title="Hapus"
                                                                 onClick={() => handleDelete(item.UserID)}
                                                             >
                                                                 <i className="bi bi-trash-fill"></i>
-                                                            </button>
+                                                            </button> */}
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -363,7 +363,7 @@ function UsersAdmin() {
                 <EditUserModal
                     show={showModalEdit}
                     handleClose={handleCloseModalEdit}
-                    handleUpdate={handleUpdate}
+                    editStatusAkun={editStatusAkun}
                     initialData={dataToEdit}
                 />
             )}

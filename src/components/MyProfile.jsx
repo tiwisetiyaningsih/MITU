@@ -12,7 +12,7 @@ import "./profile.css";
 function MyProfile() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null); 
-  const [searchKegiatan, setSearchKegiatan] = useState("");
+  const [searchKegiatan, cariKegiatan] = useState("");
 
   const [activities, setActivities] = useState([]); 
   const [filteredActivities, setFilteredActivities] = useState([]); 
@@ -74,10 +74,10 @@ function MyProfile() {
   // SIDE EFFECT: MUAT PENGGUNA DAN DATA
   // ===================================
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
+    const lihatInfoAkun = localStorage.getItem("user");
     
-    if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
+    if (lihatInfoAkun) {
+      const parsedUser = JSON.parse(lihatInfoAkun);
       
       const userID = parsedUser.UserID || parsedUser.id || null; 
 
@@ -280,7 +280,7 @@ function MyProfile() {
               className="form-control-table-search"
               placeholder="Cari Kegiatan"
               value={searchKegiatan}
-              onChange={(e) => setSearchKegiatan(e.target.value)}
+              onChange={(e) => cariKegiatan(e.target.value)}
             />
           </div>
 
@@ -378,8 +378,7 @@ function MyProfile() {
           <div className="modal-overlay">
             <div className="modal-card">
 
-              <div className="modal-header">
-                <h4 className="text-ellipsis ellipsis-judul">{selectedKegiatan.NamaKegiatan}</h4>
+              <div className="modal-header" style={{justifyContent:'flex-end'}}>
                 <i
                   className="bi bi-x-lg close-icon"
                   onClick={() => setShowModal(false)}
@@ -387,37 +386,49 @@ function MyProfile() {
               </div>
 
               {/* Gambar Tetap */}
-              <div className="modal-image-wrapper">
+              <div className="modal-image-wrapper" style={{height:'180px', marginTop:'0px'}}>
                 <img
                   src={`http://localhost:5000/uploads/${selectedKegiatan.ImageKegiatan}`}
                   alt={selectedKegiatan.NamaKegiatan}
                   className="modal-image"
                 />
-              </div><div style={{ marginBottom: '15px', marginLeft:'20px', marginTop:'5px'}}>
+              </div>
+              
+              <div style={{ marginBottom: '15px', marginLeft:'20px', marginTop:'5px'}}>
+                  <h5 className="modal-title-kegiatan">
+                    {selectedKegiatan.NamaKegiatan}
+                  </h5>
                   <span className="badge" style={{ marginRight: '5px', color: 'var(--mitu-red)', backgroundColor: '#fff0f0', padding:'10px' }}>
                         {selectedKegiatan.KategoriKegiatan}
                   </span>
               </div>
-                {/* Bagian scroll */}
+              
+              {/* Bagian scroll */}
               <div className="modal-scroll-content" style={{marginLeft:'15px', marginRight:'15px', marginTop:'-10px'}}>
 
-                    <p><strong>Deskripsi:</strong><br />{selectedKegiatan.DeskripsiKegiatan}</p>
+                    <p>
+                      <strong style={{ color: '#c30505ff' }}>Deskripsi:</strong>
+                      <br />
+                      <span className="deskripsi-text">
+                        {selectedKegiatan.DeskripsiKegiatan}
+                      </span>
+                    </p>
+                    
+                    <p><strong style={{color:'#c30505ff'}}>Status:</strong><br /> {selectedKegiatan.StatusKegiatan}</p>
 
-                    <p><strong>Status:</strong><br /> {selectedKegiatan.StatusKegiatan}</p>
-
-                    <p><strong>Tanggal Mulai:</strong><br />
+                    <p><strong style={{color:'#c30505ff'}}>Tanggal Mulai:</strong><br />
                     {formatDate(selectedKegiatan.TglMulaiKegiatan)}
                     </p>
 
-                    <p><strong>Tanggal Selesai:</strong><br />
+                    <p><strong style={{color:'#c30505ff'}}>Tanggal Selesai:</strong><br />
                     {formatDate(selectedKegiatan.TglAkhirKegiatan)}
                     </p>
 
-                    <p><strong>Tempat:</strong><br /> {selectedKegiatan.TempatKegiatan}</p>
+                    <p><strong style={{color:'#c30505ff'}}>Tempat:</strong><br /> {selectedKegiatan.TempatKegiatan}</p>
 
-                    <p><strong>Penyelenggara:</strong><br /> {selectedKegiatan.PenyelenggaraKegiatan}</p>
+                    <p><strong style={{color:'#c30505ff'}}>Penyelenggara:</strong><br /> {selectedKegiatan.PenyelenggaraKegiatan}</p>
 
-                    <p><strong>Tingkat:</strong><br /> {selectedKegiatan.TingkatKegiatan}</p>
+                    <p><strong style={{color:'#c30505ff'}}>Tingkat:</strong><br /> {selectedKegiatan.TingkatKegiatan}</p>
 
               </div>
               <div className="text-center mt-3 mb-3">

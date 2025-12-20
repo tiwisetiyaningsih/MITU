@@ -311,6 +311,21 @@
   max-width: 420px;
 }
 
+.modal-title-kegiatan {
+  font-weight: 650;
+  font-size: 18px;
+  line-height: 1.4;
+  word-break: break-word;      /* penting */
+  white-space: normal;         /* biar turun ke bawah */
+  margin-bottom: 8px;
+}
+
+.deskripsi-text {
+  white-space: pre-line;   /* INI KUNCINYA */
+  font-size: 14px;
+  line-height: 1.4;
+  display: block;
+}
 
 @keyframes fadeIn {
   from { opacity: 0; transform: scale(0.97); }

@@ -313,7 +313,7 @@ function Kegiatan() {
                             type="text"
                             placeholder="Cari Kegiatan"
                             value={search}
-                            onChange={(e) => setSearch(e.target.value)}
+                            onChange={(e) => cariKegiatan(e.target.value)}
                         />
                     </div>
                 </header>
@@ -648,50 +648,60 @@ function Kegiatan() {
             <div className="modal-overlay">
                 <div className="modal-card">
 
-                <div className="modal-header">
-                    <h4 className="text-ellipsis ellipsis-judul">{selectedKegiatan.NamaKegiatan}</h4>
-                    <i
-                    className="bi bi-x-lg close-icon"
-                    onClick={() => setShowDetailModal(false)}
-                    ></i>
-                </div>
+                <div className="modal-header" style={{justifyContent:'flex-end'}}>
+                <i
+                  className="bi bi-x-lg close-icon"
+                  onClick={() => setShowDetailModal(false)}
+                ></i>
+              </div>
 
-                {/* Gambar Tetap */}
-                <div className="modal-image-wrapper">
-                    <img
-                    src={`http://localhost:5000/uploads/${selectedKegiatan.ImageKegiatan}`}
-                    alt={selectedKegiatan.NamaKegiatan}
-                    className="modal-image"
-                    />
-                </div>
-                <div style={{ marginBottom: '15px', marginLeft:'20px', marginTop:'5px'}}>
-                    <span className="badge" style={{ marginRight: '5px', color: 'var(--mitu-red)', backgroundColor: '#fff0f0', padding:'10px' }}>
+              {/* Gambar Tetap */}
+              <div className="modal-image-wrapper" style={{height:'180px', marginTop:'0px'}}>
+                <img
+                  src={`http://localhost:5000/uploads/${selectedKegiatan.ImageKegiatan}`}
+                  alt={selectedKegiatan.NamaKegiatan}
+                  className="modal-image"
+                />
+              </div>
+              
+              <div style={{ marginBottom: '15px', marginLeft:'20px', marginTop:'5px'}}>
+                  <h5 className="modal-title-kegiatan">
+                    {selectedKegiatan.NamaKegiatan}
+                  </h5>
+                  <span className="badge" style={{ marginRight: '5px', color: 'var(--mitu-red)', backgroundColor: '#fff0f0', padding:'10px' }}>
                         {selectedKegiatan.KategoriKegiatan}
-                    </span>
-                </div>
-                {/* Bagian scroll */}
-                 <div className="modal-scroll-content" style={{marginLeft:'15px', marginRight:'15px', marginTop:'-10px'}}>
+                  </span>
+              </div>
+              
+              {/* Bagian scroll */}
+              <div className="modal-scroll-content" style={{marginLeft:'15px', marginRight:'15px', marginTop:'-10px'}}>
 
-                    <p><strong>Deskripsi:</strong><br />{selectedKegiatan.DeskripsiKegiatan}</p>
+                    <p>
+                      <strong style={{ color: '#c30505ff' }}>Deskripsi:</strong>
+                      <br />
+                      <span className="deskripsi-text">
+                        {selectedKegiatan.DeskripsiKegiatan}
+                      </span>
+                    </p>
+                    
+                    <p><strong style={{color:'#c30505ff'}}>Status:</strong><br /> {selectedKegiatan.StatusKegiatan}</p>
 
-                    <p><strong>Status:</strong><br /> {selectedKegiatan.StatusKegiatan}</p>
-
-                    <p><strong>Tanggal Mulai:</strong><br />
+                    <p><strong style={{color:'#c30505ff'}}>Tanggal Mulai:</strong><br />
                     {formatDate(selectedKegiatan.TglMulaiKegiatan)}
                     </p>
 
-                    <p><strong>Tanggal Selesai:</strong><br />
+                    <p><strong style={{color:'#c30505ff'}}>Tanggal Selesai:</strong><br />
                     {formatDate(selectedKegiatan.TglAkhirKegiatan)}
                     </p>
 
-                    <p><strong>Tempat:</strong><br /> {selectedKegiatan.TempatKegiatan}</p>
+                    <p><strong style={{color:'#c30505ff'}}>Tempat:</strong><br /> {selectedKegiatan.TempatKegiatan}</p>
 
-                    <p><strong>Penyelenggara:</strong><br /> {selectedKegiatan.PenyelenggaraKegiatan}</p>
+                    <p><strong style={{color:'#c30505ff'}}>Penyelenggara:</strong><br /> {selectedKegiatan.PenyelenggaraKegiatan}</p>
 
-                    <p><strong>Tingkat:</strong><br /> {selectedKegiatan.TingkatKegiatan}</p>
+                    <p><strong style={{color:'#c30505ff'}}>Tingkat:</strong><br /> {selectedKegiatan.TingkatKegiatan}</p>
 
-                </div>
-                <div className="text-center mt-3 mb-3">
+              </div>
+              <div className="text-center mt-3 mb-3">
                     <a
                         href={
                         selectedKegiatan.LinkPendaftaran.startsWith("http")
@@ -705,9 +715,9 @@ function Kegiatan() {
                     >
                         Buka Link Pendaftaran
                     </a>
-                    </div>
                 </div>
-            </div>
+              </div>
+          </div>
             )}
         </div>
     );

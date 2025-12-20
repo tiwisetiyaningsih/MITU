@@ -485,7 +485,7 @@
   max-width: 500px;
   background: white;
   border-radius: 16px;
-  height: 80%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -595,4 +595,20 @@
 
 .ellipsis-judul {
   max-width: 420px;
+}
+
+.modal-title-kegiatan {
+  font-weight: 650;
+  font-size: 18px;
+  line-height: 1.4;
+  word-break: break-word;      /* penting */
+  white-space: normal;         /* biar turun ke bawah */
+  margin-bottom: 8px;
+}
+
+.deskripsi-text {
+  white-space: pre-line;   /* INI KUNCINYA */
+  font-size: 14px;
+  line-height: 1.4;
+  display: block;
 }
