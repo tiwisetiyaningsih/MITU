@@ -378,35 +378,6 @@ app.delete("/hapus-simpan-kegiatan", (req, res) => {
 });
 
 // ================= USERS (CRUD) =================
-// =========== TAMBAH USERS ==========
-// =========== TAMBAH USERS ==========
-app.post("/users", async (req, res) => {
-    const { Username, Nama, Email, Password, Role, NIM, NIP, StatusAkun } = req.body;
-
-    // Validasi
-    if (!Username || !Nama || !Email || !Password || !Role) {
-        return res.json({ success: false, message: "Semua field wajib diisi!" });
-    }
-
-    const query = `
-        INSERT INTO users (Username, Nama, Email, Password, Role, NIM, NIP, StatusAkun)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-
-    db.query(
-        query,
-        [Username, Nama, Email, Password, Role, NIM || null, NIP || null, StatusAkun],
-        (err, result) => {
-            if (err) {
-                console.error("❌ Error tambah user:", err);
-                return res.json({ success: false, message: "Gagal menambah pengguna" });
-            }
-
-            res.json({ success: true, message: "Pengguna berhasil ditambahkan!" });
-        }
-    );
-});
-
 
 // ========== GET ALL USERS ==========
 app.get("/users", (req, res) => {
@@ -445,81 +416,6 @@ app.put("/users/:id", (req, res) => {
     res.json({ success: true, message: "✅ User berhasil diupdate!" });
   });
 });
-
-// =========== DELETE USER (Proteksi Admin) ===========
-app.delete("/users/:id", (req, res) => {
-    const userId = req.params.id;
-
-    // 1. Cek role user dulu
-    db.query("SELECT Role FROM users WHERE UserID = ?", [userId], (err, result) => {
-        if (err) {
-            console.error(err);
-            return res.json({ success: false, message: "Gagal memeriksa role user." });
-        }
-
-        if (result.length === 0) {
-            return res.json({ success: false, message: "User tidak ditemukan." });
-        }
-
-        const role = result[0].Role;
-
-        // 2. Jika role ADMIN → cek apakah pernah membuat kegiatan
-        if (role === "admin") {
-            db.query(
-                "SELECT COUNT(*) AS jumlah FROM kegiatan WHERE PenyelenggaraID = ?",
-                [userId],
-                (err2, result2) => {
-                    if (err2) {
-                        console.error(err2);
-                        return res.json({ success: false, message: "Gagal memeriksa kegiatan admin." });
-                    }
-
-                    const jumlahKegiatan = result2[0].jumlah;
-
-                    if (jumlahKegiatan > 0) {
-                        // ❗ ADMIN PERNAH BUAT KEGIATAN → TIDAK BOLEH DIHAPUS
-                        return res.json({
-                            success: false,
-                            message:
-                                "Admin tidak dapat dihapus karena terdapat kegiatan yang admin tambahkan sebelumnya."
-                        });
-                    }
-
-                    // Jika admin TIDAK ada kegiatan → boleh dihapus
-                    hapusUserSekalianRelasi(userId, res);
-                }
-            );
-        } else {
-            // 3. Jika bukan admin → langsung hapus
-            hapusUserSekalianRelasi(userId, res);
-        }
-    });
-});
-
-// Fungsi menghapus user + relasi
-function hapusUserSekalianRelasi(userId, res) {
-    // Hapus kegiatan tersimpan
-    db.query("DELETE FROM kegiatantersimpan WHERE UserID = ?", [userId], (err) => {
-        if (err) {
-            console.error(err);
-            return res.json({ success: false, message: "Gagal menghapus data relasi." });
-        }
-
-        // Hapus user
-        db.query("DELETE FROM users WHERE UserID = ?", [userId], (err2) => {
-            if (err2) {
-                console.error(err2);
-                return res.json({ success: false, message: "Gagal menghapus user." });
-            }
-
-            return res.json({
-                success: true,
-                message: "User berhasil dihapus!"
-            });
-        });
-    });
-}
-
 
 
 

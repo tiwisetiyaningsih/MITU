@@ -150,55 +150,37 @@ function UsersAdmin() {
     };
 
     
-    // Logic untuk Hapus (API: DELETE /users/:id)
-    const handleDelete = async (id) => {
-        console.log("Menghapus user dengan ID:", id);
-
-        const user = semuaUsers.find(item => item.UserID === id)?.Nama;
-        if (window.confirm(`Yakin ingin menghapus pengguna "${user}"?`)) {
-            try {
-                const response = await axios.delete(`${API_BASE_URL}/users/${id}`);
-                console.log("Response hapus:", response.data);
-
-                if (response.data.success) {
-                    alert(response.data.message);
-                    lihatDaftarPengguna();
-                } else {
-                    // Tampilkan pesan error dari backend (termasuk pesan admin)
-                    alert(response.data.message || "Gagal menghapus user!");
-                }
-
-            } catch (error) {
-                console.error("❌ Error deleting user:", error);
-
-                // Ambil pesan dari backend jika tersedia
-                const msg = error.response?.data?.message || "Gagal menghapus user!";
-                alert(msg);
-            }
-        }
-    };
-
-
-
-    
     const handleAddUser = () => {
         setShowModalTambah(true);
     };
 
+
     const handleAdd = async (newUser) => {
         try {
-            const response = await axios.post(`${API_BASE_URL}/users`, newUser);
+            const response = await axios.post(
+                `${API_BASE_URL}/register`,
+                newUser
+            );
 
-            if (response.data.success) {
-                alert(response.data.message);
-                setShowModalTambah(false);
-                lihatDaftarPengguna(); 
-            }
+            // backend sudah kirim success & message
+            alert("Pengguna berhasil ditambahkan!");
+
+            setShowModalTambah(false);
+            lihatDaftarPengguna();
+
         } catch (error) {
             console.error("❌ Error adding user:", error);
-            alert("Gagal menambah user!");
+
+            // Ambil pesan dari backend TANPA ubah backend
+            const message =
+                error.response?.data?.message ||
+                "Gagal menambah pengguna!";
+
+            alert(message);
         }
     };
+
+    
 
 
     const handleLogout = () => {
@@ -332,13 +314,6 @@ function UsersAdmin() {
                                                             >
                                                                 <i className="bi bi-pencil-square"></i>
                                                             </button>
-                                                            {/* <button
-                                                                className="btn-aksi btn-delete"
-                                                                title="Hapus"
-                                                                onClick={() => handleDelete(item.UserID)}
-                                                            >
-                                                                <i className="bi bi-trash-fill"></i>
-                                                            </button> */}
                                                         </div>
                                                     </td>
                                                 </tr>

@@ -21,20 +21,69 @@ function ModalTambahUser({ show, handleClose, handleAdd }) {
             [name]: value,
             ...(name === "Role" && value === "Mahasiswa" ? { NIP: "" } : {}),
             ...(name === "Role" && value === "Dosen" ? { NIM: "" } : {}),
-            ...(name === "Role" && value === "Admin" ? { NIM: "", NIP: "" } : {}),
+            ...(name === "Role" && value === "Admin" ? { NIM: "" } : {}),
         }));
     };
 
+    const isEmailValid = (email, role) => {
+        if (role === "Mahasiswa") {
+            return email.endsWith("@student.telkomuniversity.ac.id");
+        }
+
+        if (role === "Dosen" || role === "Admin") {
+            return email.endsWith("@telkomuniversity.ac.id");
+        }
+
+        return false;
+    };
+
+    const validateForm = () => {
+        if (!formData.Username.trim()) return "Username wajib diisi";
+        if (!formData.Nama.trim()) return "Nama wajib diisi";
+        if (!formData.Email.trim()) return "Email wajib diisi";
+        if (!formData.Password.trim()) return "Password wajib diisi";
+        if (!formData.Role) return "Role wajib dipilih";
+
+        if (!isEmailValid(formData.Email.trim(), formData.Role)) {
+            return "Format email tidak diterima";
+        }
+
+        if (formData.Role === "Mahasiswa" && !formData.NIM.trim()) {
+            return "NIM wajib diisi untuk Mahasiswa";
+        }
+
+        if (
+            (formData.Role === "Dosen" || formData.Role === "Admin") &&
+            !formData.NIP.trim()
+        ) {
+            return "NIP wajib diisi untuk Dosen/Admin";
+        }
+
+        return null; // valid
+    };
+
     const tambahUser = () => {
+        const errorMessage = validateForm();
+
+        if (errorMessage) {
+            alert(errorMessage);
+            return; // STOP submit
+        }
+
         const dataToSend = {
-            ...formData,
-            NIM: formData.Role === "Mahasiswa" ? formData.NIM : "",
-            NIP: formData.Role === "Dosen" ? formData.NIP : "",
+            nama: formData.Nama.trim(),
+            email: formData.Email.trim(),
+            username: formData.Username.trim(),
+            password: formData.Password,
+            NIM: formData.Role === "Mahasiswa" ? formData.NIM.trim() : null,
+            NIP:
+                formData.Role === "Dosen" || formData.Role === "Admin"
+                    ? formData.NIP.trim()
+                    : null,
         };
 
         handleAdd(dataToSend);
 
-        // Reset form
         setFormData({
             Username: "",
             Nama: "",
@@ -48,6 +97,7 @@ function ModalTambahUser({ show, handleClose, handleAdd }) {
 
         handleClose();
     };
+
 
     return (
         <Modal show={show} onHide={handleClose} centered size="lg">
@@ -140,7 +190,7 @@ function ModalTambahUser({ show, handleClose, handleAdd }) {
                                 </Form.Group>
                             )}
 
-                            {formData.Role === "Dosen" && (
+                            {formData.Role === "Dosen" || formData.Role === "Admin" && (
                                 <Form.Group className="mb-3">
                                     <Form.Label>NIP</Form.Label>
                                     <Form.Control
