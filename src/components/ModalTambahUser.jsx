@@ -37,11 +37,32 @@ function ModalTambahUser({ show, handleClose, handleAdd }) {
         return false;
     };
 
+    const isPasswordValid = (password) => {
+        const minLength = /.{8,}/;
+        const hasUpperCase = /[A-Z]/;
+        const hasLowerCase = /[a-z]/;
+        const hasNumber = /[0-9]/;
+        const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/;
+
+        return (
+            minLength.test(password) &&
+            hasUpperCase.test(password) &&
+            hasLowerCase.test(password) &&
+            hasNumber.test(password) &&
+            hasSpecialChar.test(password)
+        );
+    };
+
+
     const validateForm = () => {
         if (!formData.Username.trim()) return "Username wajib diisi";
         if (!formData.Nama.trim()) return "Nama wajib diisi";
         if (!formData.Email.trim()) return "Email wajib diisi";
         if (!formData.Password.trim()) return "Password wajib diisi";
+        if (!isPasswordValid(formData.Password)) {
+            return "❗Password minimal 8 karakter dan harus mengandung huruf besar, huruf kecil, angka, dan karakter spesial";
+        }
+
         if (!formData.Role) return "Role wajib dipilih";
 
         if (!isEmailValid(formData.Email.trim(), formData.Role)) {
@@ -157,7 +178,11 @@ function ModalTambahUser({ show, handleClose, handleAdd }) {
                                     placeholder="Masukkan Password"
                                     required
                                 />
+                                <Form.Text className="text-muted" style={{fontSize:'11px'}}>
+                                    ❗Minimal 8 karakter, huruf besar, huruf kecil, angka, dan karakter spesial
+                                </Form.Text>
                             </Form.Group>
+
                         </Col>
 
                         {/* KANAN */}

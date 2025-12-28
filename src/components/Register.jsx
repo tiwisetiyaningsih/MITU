@@ -35,14 +35,48 @@ function Register() {
     setForm(f => ({ ...f, [name]: value }));
   };
 
+  const isPasswordValid = (password) => {
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+    return regex.test(password);
+  };
+
+  const isEmailTelkomValid = (email) => {
+    return (
+      email.endsWith("@student.telkomuniversity.ac.id") ||
+      email.endsWith("@telkomuniversity.ac.id")
+    );
+  };
+
   const register = async (e) => {
     e.preventDefault();
     setMessage("");
     console.log("Data dikirim ke server:", form);
+
+    if (!isEmailTelkomValid(form.email)) {
+      setMessage("❌ Email harus menggunakan email Telkom University.");
+      return;
+    }
+
+    if (!isPasswordValid(form.password)) {
+      setMessage(
+        "❌ Password minimal 8 karakter dan harus mengandung huruf besar, huruf kecil, angka, dan karakter spesial."
+      );
+      return;
+    }
+
     try {
-      const response = await axios.post("http://localhost:5000/register", form, {
-        headers: { "Content-Type": "application/json" }
-      });
+      const payload = {
+        ...form,
+        NIM: form.NIM ? form.NIM : null,
+        NIP: form.NIP ? form.NIP : null,
+      };
+
+      const response = await axios.post(
+        "http://localhost:5000/register",
+        payload,
+        { headers: { "Content-Type": "application/json" } }
+      );
+
 
       console.log("Response server:", response.data);
       setMessage("✅ Registrasi berhasil!");

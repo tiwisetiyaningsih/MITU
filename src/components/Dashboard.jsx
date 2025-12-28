@@ -238,6 +238,7 @@ const tampilDetailKegiatan = async (id) => {
                               src={`http://localhost:5000/uploads/${item.ImageKegiatan}`}
                               alt={item.NamaKegiatan}
                               className="ongoing-img"
+                              style={{borderRadius:'14px'}}
                           />
                       ) : (
                           <div className="no-image-box">
@@ -378,6 +379,7 @@ const tampilDetailKegiatan = async (id) => {
                               src={`http://localhost:5000/uploads/${item.ImageKegiatan}`}
                               alt={item.NamaKegiatan}
                               className="card-img-rekomendasi"
+                              style={{borderRadius:'16px'}}
                           />
                       ) : (
                           <div className="no-image-box">No Image</div>

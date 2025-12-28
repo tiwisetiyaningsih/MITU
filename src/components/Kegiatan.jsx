@@ -144,6 +144,29 @@ function Kegiatan() {
     // MODAL TAMBAH KEGIATAN — FIXED
     // ======================================
     const tambahKegiatan = async () => {
+        // ================= VALIDASI WAJIB =================
+        if (
+            !formData.NamaKegiatan ||
+            !formData.KategoriKegiatan ||
+            !formData.TglMulaiKegiatan ||
+            !formData.DeskripsiKegiatan ||
+            !formData.StatusKegiatan ||
+            !formData.TingkatKegiatan ||
+            !formData.TempatKegiatan ||
+            !formData.PenyelenggaraKegiatan
+        ) {
+            alert("Harap lengkapi semua data wajib!");
+            return;
+        }
+
+        // ================= VALIDASI GAMBAR (OPSIONAL) =================
+        if (formData.ImageKegiatan) {
+            if (!formData.ImageKegiatan.type.startsWith("image/")) {
+                alert("File gambar harus berupa PNG, JPG, JPEG, dll");
+                return;
+            }
+        }
+
         try {
             const fd = new FormData();
 
@@ -151,14 +174,15 @@ function Kegiatan() {
             fd.append("NamaKegiatan", formData.NamaKegiatan);
             fd.append("KategoriKegiatan", formData.KategoriKegiatan);
             fd.append("TglMulaiKegiatan", formData.TglMulaiKegiatan);
-            fd.append("TglAkhirKegiatan", formData.TglAkhirKegiatan);
+            fd.append("TglAkhirKegiatan", formData.TglAkhirKegiatan || "");
             fd.append("DeskripsiKegiatan", formData.DeskripsiKegiatan);
             fd.append("StatusKegiatan", formData.StatusKegiatan);
             fd.append("TingkatKegiatan", formData.TingkatKegiatan);
             fd.append("TempatKegiatan", formData.TempatKegiatan);
             fd.append("PenyelenggaraKegiatan", formData.PenyelenggaraKegiatan);
-            fd.append("LinkPendaftaran", formData.LinkPendaftaran);
+            fd.append("LinkPendaftaran", formData.LinkPendaftaran || "");
 
+            // gambar opsional
             if (formData.ImageKegiatan) {
                 fd.append("ImageKegiatan", formData.ImageKegiatan);
             }
@@ -170,7 +194,8 @@ function Kegiatan() {
             if (res.data.success) {
                 alert("Kegiatan berhasil ditambahkan!");
                 tampilDaftarKegiatan();
-                handleCloseModal();
+                setShowModal(false);
+                setFormData({});
             } else {
                 alert("Gagal menambahkan kegiatan.");
             }
@@ -180,6 +205,7 @@ function Kegiatan() {
             alert("Terjadi kesalahan saat menambahkan kegiatan.");
         }
     };
+
 
 
     // ======================================
@@ -195,26 +221,52 @@ function Kegiatan() {
     };
 
     const editKegiatan = async () => {
+        // ================= VALIDASI WAJIB =================
+        if (
+            !dataToEdit.NamaKegiatan ||
+            !dataToEdit.KategoriKegiatan ||
+            !dataToEdit.tanggalMulai ||
+            !dataToEdit.DeskripsiKegiatan ||
+            !dataToEdit.StatusKegiatan ||
+            !dataToEdit.TingkatKegiatan ||
+            !dataToEdit.TempatKegiatan ||
+            !dataToEdit.PenyelenggaraKegiatan
+        ) {
+            alert("Harap lengkapi semua data wajib!");
+            return;
+        }
+
+        // ================= VALIDASI GAMBAR (OPSIONAL) =================
+        if (dataToEdit.ImageKegiatan instanceof File) {
+            if (!dataToEdit.ImageKegiatan.type.startsWith("image/")) {
+                alert("File gambar harus berupa PNG, JPG, JPEG");
+                return;
+            }
+        }
+
         try {
             const fd = new FormData();
             fd.append("NamaKegiatan", dataToEdit.NamaKegiatan);
             fd.append("KategoriKegiatan", dataToEdit.KategoriKegiatan);
             fd.append("TglMulaiKegiatan", dataToEdit.tanggalMulai);
-            fd.append("TglAkhirKegiatan", dataToEdit.tanggalAkhir);
+            fd.append("TglAkhirKegiatan", dataToEdit.tanggalAkhir || "");
             fd.append("DeskripsiKegiatan", dataToEdit.DeskripsiKegiatan);
             fd.append("StatusKegiatan", dataToEdit.StatusKegiatan);
             fd.append("TingkatKegiatan", dataToEdit.TingkatKegiatan);
             fd.append("TempatKegiatan", dataToEdit.TempatKegiatan);
             fd.append("PenyelenggaraKegiatan", dataToEdit.PenyelenggaraKegiatan);
-            fd.append("LinkPendaftaran", dataToEdit.LinkPendaftaran);
+            fd.append("LinkPendaftaran", dataToEdit.LinkPendaftaran || "");
 
+            // gambar hanya dikirim kalau user upload baru
             if (dataToEdit.ImageKegiatan instanceof File) {
                 fd.append("ImageKegiatan", dataToEdit.ImageKegiatan);
             }
 
-            const res = await axios.put(`${API_BASE_URL}/kegiatan/${dataToEdit.KegiatanID}`, fd, {
-                headers: { "Content-Type": "multipart/form-data" }
-            });
+            const res = await axios.put(
+                `${API_BASE_URL}/kegiatan/${dataToEdit.KegiatanID}`,
+                fd,
+                { headers: { "Content-Type": "multipart/form-data" } }
+            );
 
             if (res.data.success) {
                 alert("Kegiatan berhasil diperbarui!");
@@ -223,10 +275,11 @@ function Kegiatan() {
             }
 
         } catch (err) {
-            console.log(err);
+            console.error(err);
             alert("Gagal mengupdate kegiatan.");
         }
     };
+
 
 
     // ======================================
@@ -450,20 +503,31 @@ function Kegiatan() {
             </main>
 
             {/* MODAL TAMBAH KEGIATAN */}
-            <Modal show={showModal} onHide={handleCloseModal} size="lg" centered>
+            <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" centered>
                 <Form onSubmit={(e) => { e.preventDefault(); tambahKegiatan(); }}>
                     <Modal.Header closeButton>
                         <Modal.Title>Tambah Kegiatan</Modal.Title>
                     </Modal.Header>
+
                     <Modal.Body>
                         <Row className="mb-3">
                             <Form.Group as={Col}>
                                 <Form.Label>Nama Kegiatan</Form.Label>
-                                <Form.Control type="text" value={formData.NamaKegiatan || ""} onChange={e => setFormData({...formData, NamaKegiatan: e.target.value})} required/>
+                                <Form.Control
+                                    type="text"
+                                    required
+                                    value={formData.NamaKegiatan || ""}
+                                    onChange={e => setFormData({...formData, NamaKegiatan: e.target.value})}
+                                />
                             </Form.Group>
+
                             <Form.Group as={Col}>
                                 <Form.Label>Kategori</Form.Label>
-                                <Form.Select value={formData.KategoriKegiatan || ""} onChange={e => setFormData({...formData, KategoriKegiatan: e.target.value})}>
+                                <Form.Select
+                                    required
+                                    value={formData.KategoriKegiatan || ""}
+                                    onChange={e => setFormData({...formData, KategoriKegiatan: e.target.value})}
+                                >
                                     <option value="">Pilih Kategori</option>
                                     <option value="Seminar">Seminar</option>
                                     <option value="Webinar">Webinar</option>
@@ -478,35 +542,57 @@ function Kegiatan() {
                         <Row className="mb-3">
                             <Form.Group as={Col}>
                                 <Form.Label>Tanggal Mulai</Form.Label>
-                                <Form.Control type="date" value={formData.TglMulaiKegiatan || ""} onChange={e => setFormData({...formData, TglMulaiKegiatan: e.target.value})} required/>
+                                <Form.Control
+                                    type="date"
+                                    required
+                                    value={formData.TglMulaiKegiatan || ""}
+                                    onChange={e => setFormData({...formData, TglMulaiKegiatan: e.target.value})}
+                                />
                             </Form.Group>
+
                             <Form.Group as={Col}>
                                 <Form.Label>Tanggal Akhir</Form.Label>
-                                <Form.Control type="date" value={formData.TglAkhirKegiatan || ""} onChange={e => setFormData({...formData, TglAkhirKegiatan: e.target.value})} />
+                                <Form.Control
+                                    type="date"
+                                    required
+                                    value={formData.TglAkhirKegiatan || ""}
+                                    onChange={e => setFormData({...formData, TglAkhirKegiatan: e.target.value})}
+                                />
                             </Form.Group>
                         </Row>
 
                         <Form.Group className="mb-3">
                             <Form.Label>Deskripsi</Form.Label>
-                            <Form.Control as="textarea" rows={3} value={formData.DeskripsiKegiatan || ""} onChange={e => setFormData({...formData, DeskripsiKegiatan: e.target.value})}/>
+                            <Form.Control
+                                as="textarea"
+                                rows={3}
+                                required
+                                value={formData.DeskripsiKegiatan || ""}
+                                onChange={e => setFormData({...formData, DeskripsiKegiatan: e.target.value})}
+                            />
                         </Form.Group>
 
                         <Row className="mb-3">
                             <Form.Group as={Col}>
                                 <Form.Label>Status</Form.Label>
-                                <Form.Select value={formData.StatusKegiatan || ""} onChange={e => setFormData({...formData, StatusKegiatan: e.target.value})}>
+                                <Form.Select
+                                    required
+                                    value={formData.StatusKegiatan || ""}
+                                    onChange={e => setFormData({...formData, StatusKegiatan: e.target.value})}
+                                >
                                     <option value="">Pilih Status</option>
                                     <option value="Akan Datang">Akan Datang</option>
                                     <option value="Berlangsung">Berlangsung</option>
                                     <option value="Selesai">Selesai</option>
                                 </Form.Select>
                             </Form.Group>
+
                             <Form.Group as={Col}>
                                 <Form.Label>Tingkat</Form.Label>
                                 <Form.Select
+                                    required
                                     value={formData.TingkatKegiatan || ""}
                                     onChange={e => setFormData({...formData, TingkatKegiatan: e.target.value})}
-                                    required
                                 >
                                     <option value="">Pilih Tingkat</option>
                                     <option value="Internasional">Internasional</option>
@@ -519,30 +605,59 @@ function Kegiatan() {
                         <Row className="mb-3">
                             <Form.Group as={Col}>
                                 <Form.Label>Tempat</Form.Label>
-                                <Form.Control type="text" value={formData.TempatKegiatan || ""} onChange={e => setFormData({...formData, TempatKegiatan: e.target.value})}/>
+                                <Form.Control
+                                    type="text"
+                                    required
+                                    value={formData.TempatKegiatan || ""}
+                                    onChange={e => setFormData({...formData, TempatKegiatan: e.target.value})}
+                                />
                             </Form.Group>
+
                             <Form.Group as={Col}>
                                 <Form.Label>Penyelenggara</Form.Label>
-                                <Form.Control type="text" value={formData.PenyelenggaraKegiatan || ""} onChange={e => setFormData({...formData, PenyelenggaraKegiatan: e.target.value})}/>
+                                <Form.Control
+                                    type="text"
+                                    required
+                                    value={formData.PenyelenggaraKegiatan || ""}
+                                    onChange={e => setFormData({...formData, PenyelenggaraKegiatan: e.target.value})}
+                                />
                             </Form.Group>
                         </Row>
 
                         <Form.Group className="mb-3">
-                            <Form.Label>Link Pendaftaran</Form.Label>
-                            <Form.Control type="url" value={formData.LinkPendaftaran || ""} onChange={e => setFormData({...formData, LinkPendaftaran: e.target.value})}/>
+                            <Form.Label>Link Pendaftaran (Opsional)</Form.Label>
+                            <Form.Control
+                                type="url"
+                                value={formData.LinkPendaftaran || ""}
+                                onChange={e => setFormData({...formData, LinkPendaftaran: e.target.value})}
+                            />
                         </Form.Group>
 
                         <Form.Group className="mb-3">
-                            <Form.Label>Gambar Kegiatan</Form.Label>
-                            <Form.Control type="file" onChange={e => setFormData({...formData, ImageKegiatan: e.target.files[0]})}/>
+                            <Form.Label>Gambar Kegiatan (Opsional)</Form.Label>
+                            <Form.Control
+                                type="file"
+                                accept="image/*"
+                                onChange={e => {
+                                    const file = e.target.files[0];
+                                    if (file && !file.type.startsWith("image/")) {
+                                        alert("File harus berupa gambar (PNG, JPG, JPEG)");
+                                        e.target.value = null;
+                                        return;
+                                    }
+                                    setFormData({ ...formData, ImageKegiatan: file });
+                                }}
+                            />
                         </Form.Group>
                     </Modal.Body>
+
                     <Modal.Footer>
-                        <Button variant="secondary" onClick={handleCloseModal}>Batal</Button>
+                        <Button variant="secondary" onClick={() => setShowModal(false)}>Batal</Button>
                         <Button variant="primary" type="submit">Simpan</Button>
                     </Modal.Footer>
                 </Form>
-            </Modal>
+                </Modal>
+
 
             {/* MODAL EDIT KEGIATAN */}
             <Modal show={showModalEdit} onHide={() => setShowModalEdit(false)} size="lg" centered>
