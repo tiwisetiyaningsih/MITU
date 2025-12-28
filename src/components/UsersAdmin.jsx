@@ -190,6 +190,14 @@ function UsersAdmin() {
         }
     };
 
+    const shortEmail = (email, max = 20) => {
+        if (!email) return "-";
+        return email.length > max
+            ? email.substring(0, max) + "..."
+            : email;
+    };
+
+
     // ======================================
     // RENDER COMPONENT
     // ======================================
@@ -291,7 +299,9 @@ function UsersAdmin() {
                                                 <tr key={item.UserID}>
                                                     <td>{index + 1}</td>
                                                     <td>{item.Nama}</td>
-                                                    <td>{item.Email}</td>
+                                                    <td title={item.Email}>
+                                                        {shortEmail(item.Email, 20)}
+                                                    </td>
                                                     <td>{item.Username}</td>
                                                     <td className="text-center">
                                                         <span className={`badge-role ${getRoleBadgeClass(item.Role)}`}>

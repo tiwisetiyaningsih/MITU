@@ -119,6 +119,7 @@ function ModalTambahUser({ show, handleClose, handleAdd }) {
         handleClose();
     };
 
+    const [showPassword, setShowPassword] = useState(false);
 
     return (
         <Modal show={show} onHide={handleClose} centered size="lg">
@@ -170,19 +171,37 @@ function ModalTambahUser({ show, handleClose, handleAdd }) {
 
                             <Form.Group className="mb-3">
                                 <Form.Label>Password</Form.Label>
-                                <Form.Control
-                                    type="password"
-                                    name="Password"
-                                    value={formData.Password}
-                                    onChange={handleChange}
-                                    placeholder="Masukkan Password"
-                                    required
-                                />
-                                <Form.Text className="text-muted" style={{fontSize:'11px'}}>
+
+                                <div className="position-relative">
+                                    <Form.Control
+                                        type={showPassword ? "text" : "password"}
+                                        name="Password"
+                                        value={formData.Password}
+                                        onChange={handleChange}
+                                        placeholder="Masukkan Password"
+                                        required
+                                    />
+
+                                    <i
+                                        className={`bi ${showPassword ? "bi-eye-slash-fill" : "bi-eye-fill"}`}
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        style={{
+                                            position: "absolute",
+                                            top: "50%",
+                                            right: "12px",
+                                            transform: "translateY(-50%)",
+                                            cursor: "pointer",
+                                            color: "#6c757d",
+                                            fontSize: "18px",
+                                        }}
+                                        title={showPassword ? "Sembunyikan Password" : "Lihat Password"}
+                                    ></i>
+                                </div>
+
+                                <Form.Text className="text-muted" style={{ fontSize: "11px" }}>
                                     ❗Minimal 8 karakter, huruf besar, huruf kecil, angka, dan karakter spesial
                                 </Form.Text>
                             </Form.Group>
-
                         </Col>
 
                         {/* KANAN */}
